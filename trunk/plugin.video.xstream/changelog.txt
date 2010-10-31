@@ -1,0 +1,55 @@
+================================================================================
+- Version 0.3.0 - 31.10.2010
+================================================================================
+    - fix shoutcast.com 2 words url bug
+    - fix waitmessagedialog (only for dharma)
+    - add contextmenu
+    - add downloadfunction
+
+    - sites:
+        - movie2k.com
+
+    - hoster:
+        - novamov.com
+        - stream2k.com
+        - streamesel.com
+        - videoweed.com
+
+================================================================================
+- Version 0.2.0 - 29.10.2010
+================================================================================
+    - add support for xbmc 9.1.1 (thx for testing @aXeSSoire)
+    - add pluginimage (thx @djtoll)
+    - add notification function
+    - performancetweaks
+
+    - sites:
+        - moviemaze.de
+        - shoucast.com
+
+================================================================================
+- Version 0.1.0 - 28.10.2010 [initial version]
+================================================================================
+    - initial version
+
+    sites:
+        - kino.to (streams)
+        - g-stream.in (streams)
+        - southpark.de (southpark german / english)
+        - mtv.de (misucvideo / serien)
+        - nba.de (basketball)
+        - bundesliga.de (football)
+        - kino.de (movietrailers)
+        - bild.de (streams)
+        - myp2p.eu (streams)
+
+    hoster:
+        - dataup
+        - duckload
+        - loadedit
+        - megavideo
+        - mystream
+        - quickload
+        - sharehoster
+        - skyload
+        - tubeload
