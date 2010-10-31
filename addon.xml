@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="repo.plugin.video.xstream"
+        name="xStream"
+        version="1.0.0"
+        provider-name="murphy">
+    <extension point="xbmc.addon.repository" name="xStream XBMC Addon Repository">
+        <checksum/>
+        <info>http://xbmc-xstream-plugin.googlecode.com/svn/trunk/plugin.video.xstream/addons.xml</info>
+        <datadir zip="false">http://xbmc-xstream-plugin.googlecode.com/svn/trunk/</datadir>
+    </extension>
+
+    <extension point="xbmc.addon.metadata">
+        <summary lang="de">xStream Repo</summary>
+        <description lang="de">Herunterladen und installieren von xStream</description>
+        <summary lang="en">xStream Repo</summary>
+        <description lang="en">Download and install xStream</description>
+        <platform>all</platform>
+    </extension>
+</addon>
