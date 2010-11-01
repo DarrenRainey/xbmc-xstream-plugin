@@ -28,33 +28,44 @@ URL_LANGUAGE = 'http://kino.to/aSET/PageLang/1'
 
 def load():
     logger.info('load kinoto :)')
-        
-    __initSiteLanguage()
+
+    sSecurityValue = __getSecurityCookieValue()    
+    __initSiteLanguage(sSecurityValue)
    
     oGui = cGui()
 
-    __createMenuEntry(oGui, 'displayCinemaSite', 'Aktuelle KinoFilme')
-    __createMenuEntry(oGui, 'displayGenreSite', 'Kategorien')
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+    __createMenuEntry(oGui, 'displayCinemaSite', 'Aktuelle KinoFilme', oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+    __createMenuEntry(oGui, 'displayGenreSite', 'Kategorien', oOutputParameterHandler)
 
     oOutputParameterHandler = cOutputParameterHandler()
     oOutputParameterHandler.addParameter('siteUrl', URL_MOVIE_PAGE)
     oOutputParameterHandler.addParameter('page', 1)
     oOutputParameterHandler.addParameter('mediaType', 'movie')
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
     __createMenuEntry(oGui, 'displayCharacterSite', 'Filme', oOutputParameterHandler)
 
     oOutputParameterHandler = cOutputParameterHandler()
     oOutputParameterHandler.addParameter('siteUrl', URL_SERIE_PAGE)
     oOutputParameterHandler.addParameter('page', 1)
     oOutputParameterHandler.addParameter('mediaType', 'series')
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
     __createMenuEntry(oGui, 'displayCharacterSite', 'Serien', oOutputParameterHandler)
 
     oOutputParameterHandler = cOutputParameterHandler()
     oOutputParameterHandler.addParameter('siteUrl', URL_DOCU_PAGE)
     oOutputParameterHandler.addParameter('page', 1)
     oOutputParameterHandler.addParameter('mediaType', 'documentation')
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
     __createMenuEntry(oGui, 'displayCharacterSite', 'Dokumentationen', oOutputParameterHandler)
 
-    __createMenuEntry(oGui, 'displaySearchSite', 'Suche')
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+    __createMenuEntry(oGui, 'displaySearchSite', 'Suche', oOutputParameterHandler)
     
     oGui.setEndOfDirectory()
 
@@ -65,24 +76,67 @@ def __createMenuEntry(oGui, sFunction, sLabel, oOutputParameterHandler = ''):
     oGuiElement.setTitle(sLabel)    
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
-def __initSiteLanguage():
+def __initSiteLanguage(sSecurityValue):
     oRequestHandler = cRequestHandler(URL_LANGUAGE)
+    oRequestHandler.addHeaderEntry('COOKIE', sSecurityValue)
     oRequestHandler.request()
-	
+
+def __getSecurityCookieValue():
+    oRequestHandler = cRequestHandler(URL_MAIN)
+    sHtmlContent = oRequestHandler.request()
+        
+    sPattern = '<HTML><HEAD><SCRIPT language="javascript" src="([^"]+)"></SCRIPT></HEAD><BODY onload="scf\(\'(.*?)\',\'/\'\)"></BODY></HTML>'
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+   
+    if (aResult[0] == True):
+        sScriptFile = URL_MAIN + str(aResult[1][0][0])
+        sHashSnippet = str(aResult[1][0][1])
+        
+        oRequestHandler = cRequestHandler(sScriptFile)
+        sHtmlContent = oRequestHandler.request()
+       
+        sPattern = 'escape\(hsh \+ "([^"]+)"\)'
+        oParser = cParser()
+        aResult = oParser.parse(sHtmlContent, sPattern)
+
+        if (aResult[0] == True):
+            sHash = aResult[1][0]
+           
+            sHash = sHashSnippet + sHash           
+            sSecurityCookieValue = 'sitechrx=' + str(sHash)
+
+            oRequestHandler = cRequestHandler(URL_MAIN + '/')
+            oRequestHandler.addHeaderEntry('Cookie', sSecurityCookieValue)
+            oRequestHandler.addHeaderEntry('Referer', sScriptFile)
+            oRequestHandler.request()
+            
+            logger.info('token: ' + str(sSecurityCookieValue))
+            return 'sitechrx=c3d0fa909052b60d5b6c9c293b412102'
+            return sSecurityCookieValue
+    else:
+
+        return False
 
 def displaySearchSite():
     oGui = cGui()
 
+    oInputParameterHandler = cInputParameterHandler()
+    sSecurityValue = oInputParameterHandler.getValue('securityCockie')
+    
     sSearchText = oGui.showKeyBoard()
     if (sSearchText != False):
         oRequestHandler = cRequestHandler(URL_SEARCH)
+      
         oRequestHandler.addParameters('q', sSearchText)
         sRequestUri = oRequestHandler.getRequestUri();
         logger.info(sRequestUri)
 
         oRequest = cRequestHandler(sRequestUri)
+        oRequest.addHeaderEntry('Cookie', sSecurityValue)
+        oRequest.addHeaderEntry('Referer', 'http://kino.to/')
         sHtmlContent = oRequest.request()
-
+       
         # parse content
         sPattern = '<td class="Icon"><img width="16" height="11" src="http://res.kino.to/gr/sys/lng/([^"]+).png" alt="language"></td>.*?<td class="Title">.*?<a onclick="return false;" href="([^"]+)">([^<]+)</a>'
         oParser = cParser()
@@ -96,6 +150,7 @@ def displaySearchSite():
 
                 oOutputParameterHandler = cOutputParameterHandler()
                 oOutputParameterHandler.addParameter('movieUrl', URL_MAIN + str(aEntry[1]))
+                oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
                 oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
@@ -105,6 +160,9 @@ def displayCharacterSite():
     logger.info('load displayCharacterSite')
     sPattern = 'class="LetterMode.*?>([^>]+)</a>'
     oGui = cGui()
+
+    oInputParameterHandler = cInputParameterHandler()
+    sSecurityValue = oInputParameterHandler.getValue('securityCockie')
         
     oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('siteUrl') and oInputParameterHandler.exist('page') and oInputParameterHandler.exist('mediaType')):
@@ -114,6 +172,8 @@ def displayCharacterSite():
                                 
         # request
         oRequest = cRequestHandler(siteUrl)
+        oRequest.addHeaderEntry('Cookie', sSecurityValue)
+        oRequest.addHeaderEntry('Referer', 'http://kino.to/')
         sHtmlContent = oRequest.request()
 
         # parse content
@@ -131,6 +191,7 @@ def displayCharacterSite():
                 oOutputParameterHandler.addParameter('character', aEntry[0])
                 oOutputParameterHandler.addParameter('page', iPage)
                 oOutputParameterHandler.addParameter('mediaType', sMediaType)
+                oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
                 oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
@@ -139,8 +200,13 @@ def displayGenreSite():
     logger.info('load displayGenreSite')
     sPattern = '<td class="Title"><a href="/Genre/([^Poular]+)">([^"]+)</a>'
 
+    oInputParameterHandler = cInputParameterHandler()
+    sSecurityValue = oInputParameterHandler.getValue('securityCockie')
+
     # request
     oRequest = cRequestHandler(URL_GENRE_PAGE)
+    oRequest.addHeaderEntry('Cookie', sSecurityValue)
+    oRequest.addHeaderEntry('Referer', 'http://kino.to/')
     sHtmlContent = oRequest.request()
 
     # parse content
@@ -160,6 +226,7 @@ def displayGenreSite():
             oOutputParameterHandler.addParameter('page', 1)            
             oOutputParameterHandler.addParameter('mediaType', 'fGenre')
             oOutputParameterHandler.addParameter('mediaTypePageId', iGenreId)
+            oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
             oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
@@ -167,11 +234,15 @@ def displayGenreSite():
 def displayCinemaSite():
     logger.info('load displayCinemaSite')
     sPattern = '<div onclick="location.href=\'([^>]+)\';.*?<div class="Opt leftOpt Headlne"><h1>([^>]+)</h1></div>.*?<img src="([^"]+)" class="Thumb".*?"Descriptor">([^"]+)</div>'
-        
-    # request
-    oRequest = cRequestHandler(URL_CINEMA_PAGE)
-    sHtmlContent = oRequest.request()
 
+    oInputParameterHandler = cInputParameterHandler()
+    sSecurityValue = oInputParameterHandler.getValue('securityCockie')
+
+    oRequest = cRequestHandler(URL_CINEMA_PAGE)
+    oRequest.addHeaderEntry('Cookie', sSecurityValue)
+    oRequest.addHeaderEntry('Referer', 'http://kino.to/')    
+    sHtmlContent = oRequest.request()
+    
     # parse content
     oParser = cParser()
     aResult = oParser.parse(sHtmlContent, sPattern)
@@ -189,6 +260,7 @@ def displayCinemaSite():
 
             oOutputParameterHandler = cOutputParameterHandler()
             oOutputParameterHandler.addParameter('movieUrl', URL_MAIN + str(aEntry[0]))
+            oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
             oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
@@ -196,11 +268,16 @@ def displayCinemaSite():
 def parseMovieEntrySite():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
+    sSecurityValue = oInputParameterHandler.getValue('securityCockie')
+
+    oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('movieUrl')):
         sUrl = oInputParameterHandler.getValue('movieUrl')
 
         # get movieEntrySite content
         oRequest = cRequestHandler(sUrl)
+        oRequest.addHeaderEntry('Cookie', sSecurityValue)
+        oRequest.addHeaderEntry('Referer', 'http://kino.to/')
         sHtmlContent = oRequest.request()
 
         bIsSerie = __isSerie(sHtmlContent)
@@ -216,6 +293,7 @@ def parseMovieEntrySite():
                     
                     oOutputParameterHandler = cOutputParameterHandler()
                     oOutputParameterHandler.addParameter('sUrl', aSeriesItem[1])
+                    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
                     oGui.addFolder(oGuiElement, oOutputParameterHandler)
         else:
             displayHoster(sHtmlContent)
@@ -225,11 +303,17 @@ def parseMovieEntrySite():
 
 def displayHoster(sHtmlContent = ''):
     oGui = cGui()
+
+    oInputParameterHandler = cInputParameterHandler()
+    sSecurityValue = oInputParameterHandler.getValue('securityCockie')
+
     oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('sUrl')):
         sUrl = oInputParameterHandler.getValue('sUrl')
 
         oRequest = cRequestHandler(sUrl)
+        oRequest.addHeaderEntry('Cookie', sSecurityValue)
+        oRequest.addHeaderEntry('Referer', 'http://kino.to/')
         sHtmlContent = oRequest.request()
 
 
@@ -246,6 +330,7 @@ def displayHoster(sHtmlContent = ''):
             oOutputParameterHandler.addParameter('hosterUrlSite', aHoster[1])
             oOutputParameterHandler.addParameter('hosterParserMethode', aHoster[2])
             oOutputParameterHandler.addParameter('hosterFileName', aHoster[3])
+            oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
             oGui.addFolder(oGuiElement, oOutputParameterHandler)
     oGui.setEndOfDirectory()
 
@@ -292,6 +377,9 @@ def __isSerie(sHtmlContent):
 
 def parseHosterSnippet():
     oInputParameterHandler = cInputParameterHandler()
+    sSecurityValue = oInputParameterHandler.getValue('securityCockie')
+
+    oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('hosterName')
         and oInputParameterHandler.exist('hosterUrlSite')
         and oInputParameterHandler.exist('hosterParserMethode')
@@ -301,10 +389,10 @@ def parseHosterSnippet():
         sHosterParserMethode = oInputParameterHandler.getValue('hosterParserMethode')
         sHosterFileName = oInputParameterHandler.getValue('hosterFileName')
         if (sHosterParserMethode == 'parseHosterDefault'):
-            __parseHosterDefault(sHosterUrlSite, sHosterName, sHosterFileName, False)
+            __parseHosterDefault(sHosterUrlSite, sHosterName, sHosterFileName, False, sSecurityValue)
         if (sHosterParserMethode == 'parseMegaVideoCom'):
             sPattern = 'value=\\\\"http:\\\\/\\\\/www.megavideo.com\\\\/v\\\\/([^"]+)\\\\'
-            __parseHosterDefault(sHosterUrlSite, sHosterName, sHosterFileName, sPattern)
+            __parseHosterDefault(sHosterUrlSite, sHosterName, sHosterFileName, sPattern, sSecurityValue)
 
 
 def playMovieFromHoster():
@@ -338,6 +426,7 @@ def playMovieFromHoster():
 def ajaxCall():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
+    sSecurityValue = oInputParameterHandler.getValue('securityCockie')
         
     if (oInputParameterHandler.exist('page') and oInputParameterHandler.exist('mediaType')):
         iPage = oInputParameterHandler.getValue('page')
@@ -358,6 +447,8 @@ def ajaxCall():
         logger.info(sAjaxUrl)
                 
         oRequest = cRequestHandler(sAjaxUrl)
+        oRequest.addHeaderEntry('Cookie', sSecurityValue)
+        oRequest.addHeaderEntry('Referer', 'http://kino.to/')
         sHtmlContent = oRequest.request()
 
         # parse content
@@ -387,6 +478,7 @@ def ajaxCall():
 
                 oOutputParameterHandler = cOutputParameterHandler()
                 oOutputParameterHandler.addParameter('movieUrl', sUrl)
+                oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
                 oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
 
@@ -408,6 +500,7 @@ def ajaxCall():
                     oOutputParameterHandler.addParameter('page', iNextPage)
                     oOutputParameterHandler.addParameter('character', sCharacter)
                     oOutputParameterHandler.addParameter('mediaType', sMediaType)
+                    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
                     if (iMediaTypePageId != False):
                         oOutputParameterHandler.addParameter('mediaTypePageId', iMediaTypePageId)
                     oGui.addFolder(oGuiElement, oOutputParameterHandler)
@@ -417,6 +510,9 @@ def ajaxCall():
    
 def showCharacters():
     oInputParameterHandler = cInputParameterHandler()
+    sSecurityValue = oInputParameterHandler.getValue('securityCockie')
+
+    oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('mediaType')):    
         sMediaType = oInputParameterHandler.getValue('mediaType')
         
@@ -425,36 +521,36 @@ def showCharacters():
         iMediaTypePageId = oInputParameterHandler.getValue('mediaTypePageId')
 
     oGui = cGui()
-    __createCharacters(oGui, 'A', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'B', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'C', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'D', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'E', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'F', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'G', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'H', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'I', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'J', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'K', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'L', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'M', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'N', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'O', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'P', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'Q', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'R', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'S', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'T', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'U', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'V', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'W', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'X', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'Y', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, 'Z', sMediaType, iMediaTypePageId)
-    __createCharacters(oGui, '0', sMediaType, iMediaTypePageId)
+    __createCharacters(oGui, 'A', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'B', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'C', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'D', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'E', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'F', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'G', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'H', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'I', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'J', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'K', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'L', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'M', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'N', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'O', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'P', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'Q', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'R', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'S', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'T', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'U', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'V', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'W', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'X', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'Y', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, 'Z', sMediaType, iMediaTypePageId, sSecurityValue)
+    __createCharacters(oGui, '0', sMediaType, iMediaTypePageId, sSecurityValue)
     oGui.setEndOfDirectory()
 
-def __createCharacters(oGui, sCharacter, sMediaType, iMediaTypePageId):
+def __createCharacters(oGui, sCharacter, sMediaType, iMediaTypePageId, sSecurityValue):
     oGuiElement = cGuiElement()
     oGuiElement.setSiteName(SITE_NAME)
     oGuiElement.setFunction('ajaxCall')
@@ -465,6 +561,7 @@ def __createCharacters(oGui, sCharacter, sMediaType, iMediaTypePageId):
     oOutputParameterHandler.addParameter('character', sCharacter)
     oOutputParameterHandler.addParameter('mediaType', sMediaType)
     oOutputParameterHandler.addParameter('mediaTypePageId', iMediaTypePageId)
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
 def __createDisplayStart(iPage):
@@ -498,13 +595,15 @@ def __createAjaxUrl(sMediaType, iPage, iMediaTypePageId, sCharacter='A'):
     oRequestHandler.addParameters('sSortDir_0', 'asc')
     return oRequestHandler.getRequestUri()
 
-def __parseHosterDefault(sUrl, sHosterName, sHosterFileName, sPattern):
+def __parseHosterDefault(sUrl, sHosterName, sHosterFileName, sPattern, sSecurityValue):
     if (sPattern == False):
         sPattern = 'div><a href=\\\\"([^"]+)\\\\'
     
     sUrl = sUrl.replace('&amp;', '&')
 
     oRequest = cRequestHandler(sUrl)
+    oRequest.addHeaderEntry('Cookie', sSecurityValue)
+    oRequest.addHeaderEntry('Referer', 'http://kino.to/')
     sHtmlContent = oRequest.request()
         
     oParser = cParser()

@@ -2,7 +2,7 @@
 <addons>
 <addon id="plugin.video.xstream"
 	name="xStream"
-	version="0.3.0"
+	version="0.3.1"
 	provider-name="xStream">
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
