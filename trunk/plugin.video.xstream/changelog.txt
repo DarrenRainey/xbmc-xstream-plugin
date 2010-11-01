@@ -1,4 +1,18 @@
 ================================================================================
+- Version 0.3.1 - 01.11.2010
+================================================================================
+    - fix duckload pattern for movie2k
+    - catch kino.de http error 502
+    - add security-cookie to kino.to (cookiecheck)
+    - add new hoster for movie2k
+
+    - hoster:
+        - moveshare.net
+        - filestage.to
+        - screen4u.net
+        - checkThisVid.com    
+
+================================================================================
 - Version 0.3.0 - 31.10.2010
 ================================================================================
     - fix shoutcast.com 2 words url bug

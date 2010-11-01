@@ -330,6 +330,21 @@ def __checkHoster(sHoster):
     if (sHoster == 'Duckload'):
         return True
 
+    if (sHoster == 'Movshare'):
+        return True
+
+    if (sHoster == 'FileStage'):
+        return True
+
+    if (sHoster == 'Tubeload'):
+        return True
+
+    if (sHoster == 'Screen4u'):
+        return True
+
+    if (sHoster == 'CheckThisV'):
+        return True
+
     return False
 
 
@@ -449,9 +464,67 @@ def play():
                 sStreamUrl = 'http://www.duckload.com/' + aResult[1][0]
                 __play('duckload', sStreamUrl,sTitle, bDownload)
                 return
-       
 
-    oGui.setEndOfDirectory()
+            sPattern = '<a href="http://www.duckload.com/([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)           
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.duckload.com/' + aResult[1][0]
+                __play('duckload', sStreamUrl,sTitle, bDownload)
+                return
+
+        if (sHoster == 'Movshare'):          
+            sPattern = 'src="http://www.movshare.net/([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.movshare.net/' + aResult[1][0]
+                __play('movshare', sStreamUrl,sTitle, bDownload)
+                return            
+        
+            sPattern = "src='http://movshare.net/([^']+)'"
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.movshare.net/' + aResult[1][0]
+                __play('movshare', sStreamUrl,sTitle, bDownload)
+                return
+
+        if (sHoster == 'FileStage'):
+            sPattern = '<a href="http://www.filestage.to/([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.filestage.to/' + aResult[1][0]
+                __play('filestage', sStreamUrl,sTitle, bDownload)
+                return
+
+        if (sHoster == 'Tubeload'):
+            sPattern = '<a href="http://www.tubeload.to/([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.tubeload.to/' + aResult[1][0]
+                __play('tubeload', sStreamUrl,sTitle, bDownload)
+                return
+
+        if (sHoster == 'Screen4u'):
+            sPattern = '<a href="http://www.screen4u.net/([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.screen4u.net/' + aResult[1][0]
+                __play('screen4u', sStreamUrl,sTitle, bDownload)
+                return
+
+        if (sHoster == 'CheckThisV'):
+            sPattern = '<a href="http://www.checkthisvid.com/([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.checkthisvid.com/' + aResult[1][0]
+                __play('checkthisvid', sStreamUrl,sTitle, bDownload)
+                return
 
 
 def __play(sHosterFileName, linkToHosterMediaFile, sTitle, bDownload):
