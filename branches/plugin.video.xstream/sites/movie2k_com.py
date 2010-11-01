@@ -333,6 +333,9 @@ def __checkHoster(sHoster):
     if (sHoster == 'Movshare'):
         return True
 
+    if (sHoster == 'FileStage'):
+        return True
+
     return False
 
 
@@ -476,6 +479,15 @@ def play():
             if (aResult[0] == True):
                 sStreamUrl = 'http://www.movshare.net/' + aResult[1][0]
                 __play('movshare', sStreamUrl,sTitle, bDownload)
+                return
+
+        if (sHoster == 'FileStage'):
+            sPattern = '<a href="http://www.filestage.to/([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.filestage.to/' + aResult[1][0]
+                __play('filestage', sStreamUrl,sTitle, bDownload)
                 return
 
     oGui.setEndOfDirectory()
