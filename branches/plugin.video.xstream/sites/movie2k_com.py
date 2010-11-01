@@ -330,6 +330,9 @@ def __checkHoster(sHoster):
     if (sHoster == 'Duckload'):
         return True
 
+    if (sHoster == 'Movshare'):
+        return True
+
     return False
 
 
@@ -456,7 +459,24 @@ def play():
             if (aResult[0] == True):
                 sStreamUrl = 'http://www.duckload.com/' + aResult[1][0]
                 __play('duckload', sStreamUrl,sTitle, bDownload)
-                return       
+                return
+
+        if (sHoster == 'Movshare'):          
+            sPattern = 'src="http://www.movshare.net/([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.movshare.net/' + aResult[1][0]
+                __play('movshare', sStreamUrl,sTitle, bDownload)
+                return            
+        
+            sPattern = "src='http://www.movshare.net/([^']+)'"
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.movshare.net/' + aResult[1][0]
+                __play('movshare', sStreamUrl,sTitle, bDownload)
+                return
 
     oGui.setEndOfDirectory()
 
