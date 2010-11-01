@@ -444,12 +444,19 @@ def play():
         if (sHoster == 'Duckload'):
             sPattern = '<a href="http://duckload.com/([^"]+)"'
             oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)            
+            aResult = oParser.parse(sHtmlContent, sPattern)          
             if (aResult[0] == True):
                 sStreamUrl = 'http://www.duckload.com/' + aResult[1][0]
                 __play('duckload', sStreamUrl,sTitle, bDownload)
                 return
-       
+
+            sPattern = '<a href="http://www.duckload.com/([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)           
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.duckload.com/' + aResult[1][0]
+                __play('duckload', sStreamUrl,sTitle, bDownload)
+                return       
 
     oGui.setEndOfDirectory()
 
