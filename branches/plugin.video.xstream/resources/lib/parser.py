@@ -20,3 +20,6 @@ class cParser:
 
     def replace(self, sPattern, sReplaceString, sValue):
          return re.sub(sPattern, sReplaceString, sValue)
+
+    def escape(self, sValue):
+        return re.escape(sValue)
