@@ -336,6 +336,9 @@ def __checkHoster(sHoster):
     if (sHoster == 'FileStage'):
         return True
 
+    if (sHoster == 'Tubeload'):
+        return True
+
     return False
 
 
@@ -488,6 +491,15 @@ def play():
             if (aResult[0] == True):
                 sStreamUrl = 'http://www.filestage.to/' + aResult[1][0]
                 __play('filestage', sStreamUrl,sTitle, bDownload)
+                return
+
+        if (sHoster == 'Tubeload'):
+            sPattern = '<a href="http://www.tubeload.to/([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.tubeload.to/' + aResult[1][0]
+                __play('tubeload', sStreamUrl,sTitle, bDownload)
                 return
 
     oGui.setEndOfDirectory()
