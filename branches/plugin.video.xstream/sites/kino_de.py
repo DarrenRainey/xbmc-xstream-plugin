@@ -197,23 +197,31 @@ def showTrailerDetails():
 def __getStreamFile(sUrl):
     oRequest = cRequestHandler(sUrl)
     sHtmlContent = oRequest.request()
-
+    
     sPattern = 'flashvars.initItemXML = "([^"]+)";'
     oParser = cParser()
     aResult = oParser.parse(sHtmlContent, sPattern)
 
     if (aResult[0] == True):
         sXmlFile = aResult[1][0]
-
-        oRequest = cRequestHandler(sXmlFile)
-        sHtmlContent = oRequest.request()
+        
+        try:
+            oRequest = cRequestHandler(sXmlFile)
+            sHtmlContent = oRequest.request()
+        except:
+            try:
+                oRequest = cRequestHandler(sXmlFile)
+                sHtmlContent = oRequest.request()
+            except:
+                # http error 502 :(
+                return False
 
         sPattern = '<url>(.*?)</url>'
         oParser = cParser()
         aResult = oParser.parse(sHtmlContent, sPattern)
 
         if (aResult[0] == True):
-            sStreamUrl = aResult[1][0]
+            sStreamUrl = aResult[1][0]           
             logger.info(sStreamUrl)
             return sStreamUrl
 
