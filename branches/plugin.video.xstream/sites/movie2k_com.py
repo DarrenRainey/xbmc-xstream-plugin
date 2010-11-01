@@ -342,6 +342,9 @@ def __checkHoster(sHoster):
     if (sHoster == 'Screen4u'):
         return True
 
+    if (sHoster == 'CheckThisV'):
+        return True
+
     return False
 
 
@@ -512,6 +515,15 @@ def play():
             if (aResult[0] == True):
                 sStreamUrl = 'http://www.screen4u.net/' + aResult[1][0]
                 __play('screen4u', sStreamUrl,sTitle, bDownload)
+                return
+
+        if (sHoster == 'CheckThisV'):
+            sPattern = '<a href="http://www.checkthisvid.com/([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.checkthisvid.com/' + aResult[1][0]
+                __play('checkthisvid', sStreamUrl,sTitle, bDownload)
                 return
 
     oGui.setEndOfDirectory()
