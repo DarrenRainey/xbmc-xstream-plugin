@@ -339,6 +339,9 @@ def __checkHoster(sHoster):
     if (sHoster == 'Tubeload'):
         return True
 
+    if (sHoster == 'Screen4u'):
+        return True
+
     return False
 
 
@@ -500,6 +503,15 @@ def play():
             if (aResult[0] == True):
                 sStreamUrl = 'http://www.tubeload.to/' + aResult[1][0]
                 __play('tubeload', sStreamUrl,sTitle, bDownload)
+                return
+
+        if (sHoster == 'Screen4u'):
+            sPattern = '<a href="http://www.screen4u.net/([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sHtmlContent, sPattern)
+            if (aResult[0] == True):
+                sStreamUrl = 'http://www.screen4u.net/' + aResult[1][0]
+                __play('screen4u', sStreamUrl,sTitle, bDownload)
                 return
 
     oGui.setEndOfDirectory()
