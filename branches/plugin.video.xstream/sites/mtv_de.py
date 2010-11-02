@@ -13,7 +13,8 @@ SITE_NAME = 'mtv_de'
 URL_MAIN = 'http://www.mtv.de'
 URL_VIDEOS = 'http://www.mtv.de/videos'
 URL_SHOWS = 'http://www.mtv.de/videos/mtv-shows'
-URL_CHARTS = 'http://www.mtv.de/charts/videocharts'
+URL_CHARTS = 'http://www.mtv.de/charts/germany'
+URL_VIDEOCHARTS = 'http://www.mtv.de/charts/videocharts'
 URL_XML = 'http://de.esperanto.mtvi.com/www/xml/flv/flvgen.jhtml'
 URL_SEARCH = 'http://www.mtv.de/videos/search'
 
@@ -37,6 +38,12 @@ def load():
     oGuiElement.setSiteName(SITE_NAME)
     oGuiElement.setFunction('showCharts')
     oGuiElement.setTitle('Charts')
+    oGui.addFolder(oGuiElement)
+
+    oGuiElement = cGuiElement()
+    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setFunction('showVideoCharts')
+    oGuiElement.setTitle('VideoCharts')
     oGui.addFolder(oGuiElement)
 
     oGuiElement = cGuiElement()
@@ -139,23 +146,22 @@ def __createNextButtonForVideos(iPage, sOrderBy, oGui):
 
     return
 
+def showVideoCharts():
+    __parseCharts(URL_VIDEOCHARTS)
+    
 def showCharts():
+    __parseCharts(URL_CHARTS)
+
+def __parseCharts(sUrl):
     oGui = cGui()
 
-    '''
-    <td class="ch_place"><img src="images/icons/ic_charts_down.gif" alt=" "/>1</td>          <td class="ch_last"></td>          <td class="ch_artist">
+    sPattern = '<td class="ch_place">.*?"/>(.*?)</td>.*?<td class="ch_last">(.*?)</td>.*?<td class="ch_artist">(.*?)</td>.*?<td class="ch_track">(.*?)</td>.*?<td class="ch_buy">(.*?)</td>'
 
-     <img src="images/icons/ic_videoplay.gif" class="video_play_icon_list" style="position:absolute;top:0;left:0;"><img title="Video 'Love The Way You Lie (feat. Rihanna)' anschauen!" alt="Video 'Love The Way You Lie (feat. Rihanna)' anschauen!" src="http://www.mtv.de/_overdrive_pics/musicvideos/eminem/eminem_love_the_way_you_lie70.jpg" width="70px" height="53px" ></a></div>          </td>        </tr>        <tr class="dashed_bottom">          <td class="ch_place"><img src="images/icons/ic_charts_down.gif" alt
-    '''
-
-    sPattern = '<td class="ch_place"><img.*?>([^<]+)</td>.*?<td class="ch_artist">(.*?)</td>          <td class="ch_track">(.*?)</td>          <td class="ch_buy">                    <div class="smallVideoTeaser".+?><a href="([^"]+)".*?><img .+?><img.*?src="([^"]+)".*?/>'
-    
-
-    oRequest = cRequestHandler(URL_CHARTS)
+    oRequest = cRequestHandler(sUrl)
     sHtmlContent = oRequest.request()
-    
+
     oParser = cParser()
-    aResult = oParser.parse(sHtmlContent, sPattern)   
+    aResult = oParser.parse(sHtmlContent, sPattern)
 
     if (aResult[0] == True):
         for aEntry in aResult[1]:
@@ -163,14 +169,31 @@ def showCharts():
             oGuiElement.setSiteName(SITE_NAME)
             oGuiElement.setFunction('play')
 
-            sTitle = cUtil().removeHtmlTags(str(aEntry[0]) + '. ' + str(aEntry[1]) + ' - ' + str(aEntry[2]), '')
-            oGuiElement.setTitle(sTitle)
-            sThumbnail = str(aEntry[4])
-            oGuiElement.setThumbnail(sThumbnail)
+            sInterpretName = cUtil().removeHtmlTags(str(aEntry[2]), '')
 
-            sUrl = URL_MAIN + str(aEntry[3])
+            sTitle = str(aEntry[0]) + ' (' + str(aEntry[1]) + ') : ' + sInterpretName + ' - ' + str(aEntry[3])
+
             oOutputParameterHandler = cOutputParameterHandler()
-            oOutputParameterHandler.addParameter('sUrl', sUrl)
+
+            sPattern = '.*?<a href="([^"]+)".*?<img.*?<img.*?src="([^"]+)"'
+            sCode = aEntry[4]
+            oParser = cParser()
+            aResultMeta = oParser.parse(sCode, sPattern)
+            if (aResultMeta[0] == True):
+                oGuiElement.setTitle(sTitle)
+
+                sLink = aResultMeta[1][0][0]
+                sThumbnail = aResultMeta[1][0][1]
+
+                oGuiElement.setThumbnail(sThumbnail)
+
+                sUrl = URL_MAIN + str(sLink)
+                oOutputParameterHandler.addParameter('sUrl', sUrl)
+
+            else:
+                sTitle = sTitle + ' (NO VIDEO)'
+                oGuiElement.setTitle(sTitle)
+
             oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
