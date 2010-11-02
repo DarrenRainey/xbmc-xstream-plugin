@@ -10,6 +10,7 @@ class cHoster:
         return ' errortext="(.+?)"'
 
     def setUrl(self, sUrl):
+        sUrl = sUrl.replace('http://www.megavideo.com/?v=', '')
         self.__sUrl = 'http://www.megavideo.com/xml/videolink.php?v=' + str(sUrl)
 
     def checkUrl(self, sUrl):
@@ -19,7 +20,7 @@ class cHoster:
         return self.__sUrl
 
     def getMediaLink(self):
-        
+                
         oRequest = cRequestHandler(self.getUrl())
         oRequest.addHeaderEntry('Referer', 'http://www.megavideo.com/')
         sContent = oRequest.request()
