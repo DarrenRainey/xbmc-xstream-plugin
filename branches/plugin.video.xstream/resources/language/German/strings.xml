@@ -15,7 +15,8 @@
         <string id="30109">Plugin Bild.de anschalten</string>
         <string id="30110">Plugin MovieMaze.de anschalten</string>
         <string id="30111">Plugin Shoutcast.com anschalten</string>
-        <string id="30112">Plugin Movie2k anschalten</string>
+        <string id="30112">Plugin Movie2k.com anschalten</string>
+        <string id="30113">Plugin Simpsons.to anschalten</string>
 
         <!-- Pluginsname  -->
         <string id="30201">Kino.to</string>
@@ -30,6 +31,7 @@
         <string id="30210">MovieMaze.de</string>
         <string id="30211">Shoutcast.com</string>
         <string id="30212">Movie2k.com</string>
+        <string id="30213">Simpsons.to</string>
 
         <string id="30302">Staffeln Deutsch</string>
         <string id="30303">Staffeln Englisch</string>
