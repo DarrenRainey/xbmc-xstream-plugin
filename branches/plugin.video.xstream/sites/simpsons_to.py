@@ -6,6 +6,8 @@ from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.gui.gui import cGui
 from resources.lib.player import cPlayer
 from resources.lib.util import cUtil
+from resources.lib.gui.contextElement import cContextElement
+from resources.lib.download import cDownload
 import logger
 
 
@@ -14,6 +16,7 @@ SITE_NAME = 'simpsons_to'
 URL_MAIN = 'http://www.simpsons.to/'
 URL_LOAD_PAGE = 'http://www.simpsons.to/load_page.php'
 URL_PLAYER = 'http://stream.simpsons.to/streamlink/?'
+URL_SEARCH = 'http://www.simpsons.to/functions/search.inc.php'
 
 def load():
     logger.info('load simpsons :)')
@@ -24,6 +27,12 @@ def load():
     oGuiElement.setSiteName(SITE_NAME)
     oGuiElement.setFunction('displaySeasions')
     oGuiElement.setTitle('Staffeln')
+    oGui.addFolder(oGuiElement)
+
+    oGuiElement = cGuiElement()
+    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setFunction('displaySearch')
+    oGuiElement.setTitle('Suche')
     oGui.addFolder(oGuiElement)
 
     oGui.setEndOfDirectory()
@@ -40,6 +49,21 @@ def __loadPageContent():
         return sHtmlContent
 
     return False
+
+def displaySearch():
+    oGui = cGui()
+
+    sSearchText = oGui.showKeyBoard()
+    if (sSearchText != False):
+        __callSearch(sSearchText)
+
+    oGui.setEndOfDirectory()
+
+def __callSearch(sSearchText):
+    oRequest = cRequestHandler(URL_SEARCH)
+    oRequest.addParameters('myfield', sSearchText)
+    sHtmlContent = oRequest.request()
+    __parseEpisodes(sHtmlContent)
     
 def displaySeasions():
     oGui = cGui()
@@ -75,29 +99,39 @@ def showEpisodes():
 
     sHtmlContent = __loadPageContent()
     if (sHtmlContent != False):
-        # mit sprache, jedoch bekomme ich dann nicht den letzten eintrag
-        #sPattern = '<h1 style="color:#000000;" title="([^"]+)">.*?<img src="([^"]+)" class="episoden_vorschau".*?<a href="([^"]+)" class="optionen_alle".*?<img src="images/language/(.*?).gif"'
-
-        sPattern = '<h1 style="color:#000000;" title="([^"]+)">.*?<img src="([^"]+)" class="episoden_vorschau".*?<a href="([^"]+)" class="optionen_alle"'
-
-        oParser = cParser()
-        aResult = oParser.parse(sHtmlContent, sPattern)
-       
-        if (aResult[0] == True):
-            for aEntry in aResult[1]:
-                oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
-                oGuiElement.setFunction('showHoster')
-                #oGuiElement.setTitle(__createTitle(aEntry[0], aEntry[3]))
-                oGuiElement.setTitle(__createTitle(aEntry[0], ''))
-                oGuiElement.setThumbnail(URL_MAIN + str(aEntry[1]))
-
-                oOutputParameterHandler = cOutputParameterHandler()
-                oOutputParameterHandler.addParameter('sPage', aEntry[2])
-                oGui.addFolder(oGuiElement, oOutputParameterHandler)
-        
+        __parseEpisodes(sHtmlContent)
+        return
 
     oGui.setEndOfDirectory()
+
+def __parseEpisodes(sHtmlContent):
+    oGui = cGui()
+
+    # mit sprache, jedoch bekomme ich dann nicht den letzten eintrag
+    #sPattern = '<h1 style="color:#000000;" title="([^"]+)">.*?<img src="([^"]+)" class="episoden_vorschau".*?<a href="([^"]+)" class="optionen_alle".*?<img src="images/language/(.*?).gif"'
+
+    sPattern = '<h1 style="color:#000000;" title="([^"]+)">.*?<img src="([^"]+)" class="episoden_vorschau".*?<a href="([^"]+)" class="optionen_alle"'
+
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+
+    if (aResult[0] == True):
+        for aEntry in aResult[1]:
+            oGuiElement = cGuiElement()
+            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setFunction('showHoster')
+            #oGuiElement.setTitle(__createTitle(aEntry[0], aEntry[3]))
+            sTitle = __createTitle(aEntry[0], '')
+            oGuiElement.setTitle(sTitle)
+            oGuiElement.setThumbnail(URL_MAIN + str(aEntry[1]))
+
+            oOutputParameterHandler = cOutputParameterHandler()
+            oOutputParameterHandler.addParameter('sPage', aEntry[2])
+            oOutputParameterHandler.addParameter('sTitle', sTitle)
+            oGui.addFolder(oGuiElement, oOutputParameterHandler)
+
+    oGui.setEndOfDirectory()
+    
 
 def __createTitle(sTitle, sLanguage):
     if (sLanguage == 'gb'):
@@ -114,6 +148,9 @@ def showHoster():
     sHtmlContent = __loadPageContent()
     if (sHtmlContent != False):
 
+        oInputParameterHandler = cInputParameterHandler()
+        sMovieTitle = oInputParameterHandler.getValue('sTitle')
+
         oParser = cParser()
         sPattern = "<b>Hoster:</b>(.*?)</div>.*?<a href='([^']+)' class='optionen_mirror'"
         aResult = oParser.parse(sHtmlContent, sPattern)
@@ -122,17 +159,33 @@ def showHoster():
             for aEntry in aResult[1]:
                 sTitle = cUtil().removeHtmlTags(aEntry[0], '').replace(' ', '')
 
-                oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
-                oGuiElement.setFunction('parseHoster')
-                oGuiElement.setTitle(sTitle)
+                if (__checkHoster(sTitle) == True):
+                    oGuiElement = cGuiElement()
+                    oGuiElement.setSiteName(SITE_NAME)
+                    oGuiElement.setFunction('parseHoster')
+                    oGuiElement.setTitle(sTitle)
 
-                sPlayerId = __getPlayerId(aEntry[1])
+                    sPlayerId = __getPlayerId(aEntry[1])
 
-                oOutputParameterHandler = cOutputParameterHandler()
-                oOutputParameterHandler.addParameter('sPlayerId', sPlayerId)
-                oOutputParameterHandler.addParameter('sHosterName', sTitle)
-                oGui.addFolder(oGuiElement, oOutputParameterHandler)
+                    oContextElement = cContextElement()
+                    oContextElement.setTitle('Download')
+                    oContextElement.setFile(SITE_NAME)
+                    oContextElement.setFunction('parseHoster')
+                    oOutputParameterHandler = cOutputParameterHandler()
+                    oOutputParameterHandler.addParameter('sPlayerId', sPlayerId)
+                    oOutputParameterHandler.addParameter('sHosterName', sTitle)
+                    oOutputParameterHandler.addParameter('bDownload', 'True')
+                    oOutputParameterHandler.addParameter('sTitle', sMovieTitle)
+                    oContextElement.setOutputParameterHandler(oOutputParameterHandler)
+                    oGuiElement.addContextItem(oContextElement)
+
+                    oOutputParameterHandler = cOutputParameterHandler()
+                    oOutputParameterHandler.addParameter('sPlayerId', sPlayerId)
+                    oOutputParameterHandler.addParameter('sHosterName', sTitle)                    
+                    oOutputParameterHandler.addParameter('sTitle', sMovieTitle)
+                    oGui.addFolder(oGuiElement, oOutputParameterHandler)
+
+                   
 
     oGui.setEndOfDirectory()
 
@@ -148,16 +201,45 @@ def parseHoster():
     if (oInputParameterHandler.exist('sPlayerId') and oInputParameterHandler.exist('sHosterName')):
         sPlayerId = oInputParameterHandler.getValue('sPlayerId')
         sHosterName = oInputParameterHandler.getValue('sHosterName')
-
-        print sPlayerId
-        print sHosterName
+        sTitle = oInputParameterHandler.getValue('sTitle')
+        
+        bDownload = False
+        if (oInputParameterHandler.exist('bDownload')):
+            bDownload = True
        
-        __playStreamUrl(sPlayerId, sHosterName)
+        __playStreamUrl(sPlayerId, sHosterName, sTitle, bDownload)
         return
     
     oGui.setEndOfDirectory()
 
-def __playStreamUrl(sPlayerId, sHosterName):
+def __checkHoster(sHosterName):
+    sHosterName = sHosterName.lower()
+
+    if (sHosterName == 'mystream.to'):
+        return True
+
+    if (sHosterName == 'megavideo.com'):
+        return True
+
+    if (sHosterName == 'duckload.com'):
+        return True
+
+    if (sHosterName == 'zshare.net'):
+        return True
+
+    if (sHosterName == 'videoweed.com'):
+        return True
+
+    if (sHosterName == 'tubeload.to'):
+        return True
+
+    if (sHosterName == 'qip.ru'):
+        return True
+
+    return False
+    
+
+def __playStreamUrl(sPlayerId, sHosterName, sTitle, bDownload):
     oGui = cGui()
 
     sHosterName = sHosterName.lower()
@@ -166,30 +248,33 @@ def __playStreamUrl(sPlayerId, sHosterName):
     oRequest = cRequestHandler(sUrl)
     oRequest.request()
     sStreamUrl = oRequest.getRealUrl()
-    print sStreamUrl
-    
+        
     if (sHosterName == 'mystream.to'):
-        __play('mystream', sStreamUrl, '', False)
+        __play('mystream', sStreamUrl, sTitle, bDownload)
         return
 
     if (sHosterName == 'megavideo.com'):
-        __play('megavideo', sStreamUrl, '', False)
+        __play('megavideo', sStreamUrl, sTitle, bDownload)
         return
 
     if (sHosterName == 'duckload.com'):
-        __play('duckload', sStreamUrl, '', False)
+        __play('duckload', sStreamUrl, sTitle, bDownload)
         return
 
     if (sHosterName == 'zshare.net'):
-        __play('zshare', sStreamUrl, '', False)
+        __play('zshare', sStreamUrl, sTitle, bDownload)
         return
 
     if (sHosterName == 'videoweed.com'):
-        __play('videoweed', sStreamUrl, '', False)
+        __play('videoweed', sStreamUrl, sTitle, bDownload)
         return
 
     if (sHosterName == 'tubeload.to'):
-        __play('tubeload', sStreamUrl, '', False)
+        __play('tubeload', sStreamUrl, sTitle, bDownload)
+        return
+
+    if (sHosterName == 'qip.ru'):
+        __play('qip', sStreamUrl, sTitle, bDownload)
         return
 
 
