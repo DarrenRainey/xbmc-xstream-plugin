@@ -1,4 +1,17 @@
 ================================================================================
+- Version 0.3.2 - 03.11.2010
+================================================================================
+    - fix mtv.de VideoCharts
+    - add mtv.de WeeklyCharts
+
+    - sites:
+        - simpsons.to (serie stream)
+
+    - hoster:
+        - zshare
+        - qip
+
+================================================================================
 - Version 0.3.1 - 01.11.2010
 ================================================================================
     - fix duckload pattern for movie2k
@@ -7,10 +20,10 @@
     - add new hoster for movie2k
 
     - hoster:
-        - moveshare.net
-        - filestage.to
-        - screen4u.net
-        - checkThisVid.com    
+        - moveshare
+        - filestage
+        - screen4u
+        - checkThisVid
 
 ================================================================================
 - Version 0.3.0 - 31.10.2010
@@ -21,13 +34,13 @@
     - add downloadfunction
 
     - sites:
-        - movie2k.com
+        - movie2k.com (streams)
 
     - hoster:
-        - novamov.com
-        - stream2k.com
-        - streamesel.com
-        - videoweed.com
+        - novamov
+        - stream2k
+        - streamesel
+        - videoweed
 
 ================================================================================
 - Version 0.2.0 - 29.10.2010
@@ -38,8 +51,8 @@
     - performancetweaks
 
     - sites:
-        - moviemaze.de
-        - shoucast.com
+        - moviemaze.de (trailers)
+        - shoucast.com (radio)
 
 ================================================================================
 - Version 0.1.0 - 28.10.2010 [initial version]
@@ -50,7 +63,7 @@
         - kino.to (streams)
         - g-stream.in (streams)
         - southpark.de (southpark german / english)
-        - mtv.de (misucvideo / serien)
+        - mtv.de (musicvideo / serien)
         - nba.de (basketball)
         - bundesliga.de (football)
         - kino.de (movietrailers)
