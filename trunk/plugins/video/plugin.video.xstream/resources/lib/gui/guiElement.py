@@ -73,6 +73,7 @@ class cGuiElement:
 
     def getItemValues(self):
         self.__aItemValues['Title'] = self.getTitle()
+        self.__aItemValues['Plot'] = self.getDescription()
         return self.__aItemValues
     
     def addItemProperties(self, sPropertyKey, mPropertyValue):

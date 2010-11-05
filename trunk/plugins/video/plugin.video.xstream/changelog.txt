@@ -1,4 +1,19 @@
 ================================================================================
+- Version 0.3.3 - 05.11.2010
+================================================================================
+    - add kino.to functions
+        - show favourite series, docus, movies
+        - show latets entries
+        - show news
+        - set language by title
+        - add info item
+        - add thumbnail to movies, series, docus
+        - add other hoster (flash / divx)
+
+    - hoster:
+        - archive
+
+================================================================================
 - Version 0.3.2 - 03.11.2010
 ================================================================================
     - fix mtv.de VideoCharts
