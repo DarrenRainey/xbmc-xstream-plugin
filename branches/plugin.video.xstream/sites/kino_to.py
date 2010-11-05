@@ -118,12 +118,15 @@ def load():
     oGui.setEndOfDirectory()
     
 def __createTitleWithLanguage(sLanguage, sTitle):
+    sTitle = cUtil().removeHtmlTags(sTitle, '')
     sTitle = str(sTitle).replace('\t', '').replace('&amp;', '&')
 
     if (sLanguage == '1'):
         return sTitle + ' (de)'
     if (sLanguage == '2'):
 	return sTitle + ' (en)'
+    if (sLanguage == '7'):
+	return sTitle + ' (tu)'
 
     return sTitle
 
@@ -298,13 +301,13 @@ def parseNews():
     aResult = oParser.parse(sHtmlContent, sPattern)
     if (aResult[0] == True):
         sHtmlContent = aResult[1][0]
-        
-        sPattern = '<td class="Icon"><img src="http://res.kino.to/gr/sys/lng/([^"]+).png" alt="language" width="16" height="11".*?<td class="Title">.*?<a href ="([^"]+)" class="OverlayLabel">([^<]+)</a>'
+            
+        sPattern = '<td class="Icon"><img src="http://res.kino.to/gr/sys/lng/([^"]+).png" alt="language" width="16" height="11".*?<td class="Title">.*?"([^"]+)" class="OverlayLabel">(.*?)</td>'
 
         # parse content
         oParser = cParser()
-        aResult = oParser.parse(sHtmlContent, sPattern)
-        
+        aResult = oParser.parse(sHtmlContent, sPattern)        
+
         if (aResult[0] == True):
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
@@ -313,7 +316,13 @@ def parseNews():
                 oGuiElement.setTitle(__createTitleWithLanguage(aEntry[0], aEntry[2]))
 
                 oOutputParameterHandler = cOutputParameterHandler()
-                oOutputParameterHandler.addParameter('movieUrl', URL_MAIN + str(aEntry[1]))
+
+                sUrl = str(aEntry[1])
+                aUrl = sUrl.split(',')
+                if (len(aUrl) > 0):
+                    sUrl = aUrl[0]
+               
+                oOutputParameterHandler.addParameter('movieUrl', URL_MAIN + sUrl)
                 oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
                 oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
@@ -438,7 +447,7 @@ def parseMovieEntrySite():
     oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('movieUrl')):
         sUrl = oInputParameterHandler.getValue('movieUrl')
-
+        
         # get movieEntrySite content
         oRequest = cRequestHandler(sUrl)
         oRequest.addHeaderEntry('Cookie', sSecurityValue)
@@ -501,7 +510,7 @@ def showInfo():
     oGuiElement.setDescription(cUtil().removeHtmlTags(oInputParameterHandler.getValue('sDescription'), ''))
 
     for sKey, sValue in aDetails.iteritems():
-        oGuiElement.ItemValues(str(sKey), sValue)
+        oGuiElement.addItemValues(str(sKey), sValue)
   
     oGui.showInfo(oGuiElement)
     return
