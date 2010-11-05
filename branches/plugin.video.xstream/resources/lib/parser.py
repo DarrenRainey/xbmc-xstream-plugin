@@ -23,3 +23,12 @@ class cParser:
 
     def escape(self, sValue):
         return re.escape(sValue)
+    
+    def getNumberFromString(self, sValue):
+        sPattern = "\d+"
+        aMatches = re.findall(sPattern, sValue)
+        if (len(aMatches) > 0):
+            return int(aMatches[0])
+        return 0
+
+
