@@ -10,6 +10,13 @@ def run():
 
         parseUrl()
 
+def runTestPlugin(oGui):
+    oGuiElement = cGuiElement()
+    oGuiElement.setTitle('testPlugin')
+    oGuiElement.setSiteName('test')
+    oGuiElement.setFunction('load')
+    oGui.addFolder(oGuiElement)
+
 def parseUrl():
     oInputParameterHandler = cInputParameterHandler()
 
@@ -31,8 +38,7 @@ def parseUrl():
             oGui = cGui()
             oPluginHandler = cPluginHandler()
             aPlugins = oPluginHandler.getAvailablePlugins()
-            if (len(aPlugins) == 0):
-                #oGui.showNofication('Modulauswahl', 'Bitte Module auswaehlen')
+            if (len(aPlugins) == 0):                
                 oGui.openSettings()                
             else:
                 for aPlugin in aPlugins:
@@ -41,5 +47,8 @@ def parseUrl():
                     oGuiElement.setSiteName(aPlugin[1])
                     oGuiElement.setFunction(sFunction)
                     oGui.addFolder(oGuiElement)
-         
+
+            # TEST PLUGIN
+            #runTestPlugin(oGui)
+
             oGui.setEndOfDirectory()

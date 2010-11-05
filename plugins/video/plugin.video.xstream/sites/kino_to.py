@@ -7,6 +7,7 @@ from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.parser import cParser
 from resources.lib.player import cPlayer
+from resources.lib.util import cUtil
 
 SITE_NAME = 'kino_to'
 URL_MAIN = 'http://kino.to'
@@ -19,6 +20,9 @@ URL_DOCU_PAGE = 'http://kino.to/Documentation.html'
 URL_FAVOURITE_MOVIE_PAGE = 'http://kino.to/FavoredMovies.html'
 URL_FAVOURITE_SERIE_PAGE = 'http://kino.to/FavoredSeries.html'
 URL_FAVOURITE_DOCU_PAGE = 'http://kino.to/FavoredDocus.html'
+
+URL_LATEST_SERIE_PAGE = 'http://kino.to/LatestSeries.html'
+URL_LATEST_DOCU_PAGE = 'http://kino.to/LatestDocus.html'
 
 URL_SEARCH = 'http://kino.to/Search.html'
 URL_MIRROR = 'http://kino.to/aGET/Mirror/'
@@ -33,6 +37,13 @@ def load():
     __initSiteLanguage(sSecurityValue)
    
     oGui = cGui()
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_MAIN)
+    oOutputParameterHandler.addParameter('page', 1)
+    oOutputParameterHandler.addParameter('mediaType', 'news')
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+    __createMenuEntry(oGui, 'displayNews', 'Neues von Heute', oOutputParameterHandler)
 
     oOutputParameterHandler = cOutputParameterHandler()
     oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
@@ -62,12 +73,63 @@ def load():
     oOutputParameterHandler.addParameter('mediaType', 'documentation')
     oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
     __createMenuEntry(oGui, 'displayCharacterSite', 'Dokumentationen', oOutputParameterHandler)
+    
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_FAVOURITE_MOVIE_PAGE)
+    oOutputParameterHandler.addParameter('page', 1)
+    oOutputParameterHandler.addParameter('mediaType', 'movie')
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+    __createMenuEntry(oGui, 'displayFavItems', 'Beliebteste Filme', oOutputParameterHandler)
+    
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_FAVOURITE_SERIE_PAGE)
+    oOutputParameterHandler.addParameter('page', 1)
+    oOutputParameterHandler.addParameter('mediaType', 'series')
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+    __createMenuEntry(oGui, 'displayFavItems', 'Beliebteste Serien', oOutputParameterHandler)
+    
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_FAVOURITE_DOCU_PAGE)
+    oOutputParameterHandler.addParameter('page', 1)
+    oOutputParameterHandler.addParameter('mediaType', 'documentation')
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+    __createMenuEntry(oGui, 'displayFavItems', 'Beliebteste Dokumentationen', oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_LATEST_SERIE_PAGE)
+    oOutputParameterHandler.addParameter('page', 1)
+    oOutputParameterHandler.addParameter('mediaType', 'series')
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+    __createMenuEntry(oGui, 'displayFavItems', 'Neuste Serien', oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_LATEST_DOCU_PAGE)
+    oOutputParameterHandler.addParameter('page', 1)
+    oOutputParameterHandler.addParameter('mediaType', 'documentation')
+    oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+    __createMenuEntry(oGui, 'displayFavItems', 'Neuste Dokumentationen', oOutputParameterHandler)
+
+    
 
     oOutputParameterHandler = cOutputParameterHandler()
     oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
     __createMenuEntry(oGui, 'displaySearchSite', 'Suche', oOutputParameterHandler)
     
     oGui.setEndOfDirectory()
+    
+def __createTitleWithLanguage(sLanguage, sTitle):
+    sTitle = cUtil().removeHtmlTags(sTitle, '')
+    sTitle = str(sTitle).replace('\t', '').replace('&amp;', '&')
+
+    if (sLanguage == '1'):
+        return sTitle + ' (de)'
+    if (sLanguage == '2'):
+	return sTitle + ' (en)'
+    if (sLanguage == '7'):
+	return sTitle + ' (tu)'
+
+    return sTitle
+
 
 def __createMenuEntry(oGui, sFunction, sLabel, oOutputParameterHandler = ''):
     oGuiElement = cGuiElement()
@@ -136,24 +198,136 @@ def displaySearchSite():
         oRequest.addHeaderEntry('Cookie', sSecurityValue)
         oRequest.addHeaderEntry('Referer', 'http://kino.to/')
         sHtmlContent = oRequest.request()
-       
+
+        __diplayItems(sHtmlContent)
+        return
+
+    oGui.setEndOfDirectory()
+
+def __diplayItems(sHtmlContent):
+    sHtmlContent = str(sHtmlContent)
+
+    sSecurityValue = ''
+    oInputParameterHandler = cInputParameterHandler()
+    if (oInputParameterHandler.exist('securityCockie')):
+        sSecurityValue = oInputParameterHandler.getValue('securityCockie')
+   
+    sPattern = '<td class="Icon"><img width="16" height="11" src="http://res.kino.to/gr/sys/lng/([^"]+).png" alt="language"></td>.*?<td class="Title">.*?<a onclick="return false;" href="([^"]+)">([^<]+)</a>'
+    oGui = cGui()
+
+    # parse content
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+
+    if (aResult[0] == True):
+        for aEntry in aResult[1]:
+            oGuiElement = cGuiElement()
+            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setFunction('parseMovieEntrySite')
+            oGuiElement.setTitle(__createTitleWithLanguage(aEntry[0], aEntry[2]))
+
+            oOutputParameterHandler = cOutputParameterHandler()
+            oOutputParameterHandler.addParameter('movieUrl', URL_MAIN + str(aEntry[1]))
+            oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+            oGui.addFolder(oGuiElement, oOutputParameterHandler)
+
+    oGui.setEndOfDirectory()
+
+
+def __getHtmlContent():
+    oInputParameterHandler = cInputParameterHandler()
+    if (oInputParameterHandler.exist('siteUrl') and oInputParameterHandler.exist('mediaType')):
+        siteUrl = oInputParameterHandler.getValue('siteUrl')
+        sSecurityValue = oInputParameterHandler.getValue('securityCockie')
+
+        # request
+        oRequest = cRequestHandler(siteUrl)
+        oRequest.addHeaderEntry('Cookie', sSecurityValue)
+        oRequest.addHeaderEntry('Referer', 'http://kino.to/')
+        return oRequest.request()
+    
+    return ''
+    
+
+def displayFavItems():
+    #sPattern = '<td class="Icon"><img width="16" height="11" src="http://res.kino.to/gr/sys/lng/([^"]+).png" alt="language"></td>.*?<td class="Title">.*?<a onclick="return false;" href="([^"]+)">([^<]+)</a>'
+
+    sHtmlContent = __getHtmlContent()
+    __diplayItems(sHtmlContent)    
+
+def displayNews():
+    oInputParameterHandler = cInputParameterHandler()
+    sSecurityValue = oInputParameterHandler.getValue('securityCockie')
+
+    sHtmlContent = __getHtmlContent()
+
+    sPattern = '<div class="ModuleHead mHead"><div class="Opt leftOpt Dummy"></div>.*?<div class="Opt leftOpt Headlne"><h1>(.*?)</h1></div>	<div class="Opt rightOpt Hint">Insgesamt: (.*?)</div>'
+    
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+
+    oGui = cGui()
+    
+    if (aResult[0] == True):
+        for aEntry in aResult[1]:
+                oGuiElement = cGuiElement()
+                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setFunction('parseNews')
+                oGuiElement.setTitle(__createTitleWithLanguage('', aEntry[0]) +  ' (' + str(aEntry[1]) + ')')
+                
+                oOutputParameterHandler = cOutputParameterHandler()
+                oOutputParameterHandler.addParameter('siteUrl', URL_MAIN)
+                oOutputParameterHandler.addParameter('page', 1)
+                oOutputParameterHandler.addParameter('mediaType', 'news')
+                oOutputParameterHandler.addParameter('sNewsTitle', aEntry[0])              
+                oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+                oGui.addFolder(oGuiElement, oOutputParameterHandler)
+
+    oGui.setEndOfDirectory()
+
+def parseNews():
+    oGui = cGui()
+    sHtmlContent = __getHtmlContent()
+    oInputParameterHandler = cInputParameterHandler()
+    sSecurityValue = oInputParameterHandler.getValue('securityCockie')
+
+    oInputParameterHandler = cInputParameterHandler()
+    sNewsTitle = oInputParameterHandler.getValue('sNewsTitle')
+
+    sPatternStart = '<div class="Opt leftOpt Headlne"><h1>' + str(sNewsTitle)
+    sPattern = sPatternStart + '(.*?)<div class="ModuleFooter">'
+
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+    if (aResult[0] == True):
+        sHtmlContent = aResult[1][0]
+            
+        sPattern = '<td class="Icon"><img src="http://res.kino.to/gr/sys/lng/([^"]+).png" alt="language" width="16" height="11".*?<td class="Title">.*?"([^"]+)" class="OverlayLabel">(.*?)</td>'
+
         # parse content
-        sPattern = '<td class="Icon"><img width="16" height="11" src="http://res.kino.to/gr/sys/lng/([^"]+).png" alt="language"></td>.*?<td class="Title">.*?<a onclick="return false;" href="([^"]+)">([^<]+)</a>'
         oParser = cParser()
-        aResult = oParser.parse(sHtmlContent, sPattern)
+        aResult = oParser.parse(sHtmlContent, sPattern)        
+
         if (aResult[0] == True):
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
                 oGuiElement.setSiteName(SITE_NAME)
                 oGuiElement.setFunction('parseMovieEntrySite')
-                oGuiElement.setTitle(aEntry[2])
+                oGuiElement.setTitle(__createTitleWithLanguage(aEntry[0], aEntry[2]))
 
                 oOutputParameterHandler = cOutputParameterHandler()
-                oOutputParameterHandler.addParameter('movieUrl', URL_MAIN + str(aEntry[1]))
+
+                sUrl = str(aEntry[1])
+                aUrl = sUrl.split(',')
+                if (len(aUrl) > 0):
+                    sUrl = aUrl[0]
+               
+                oOutputParameterHandler.addParameter('movieUrl', URL_MAIN + sUrl)
                 oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
                 oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
+
     
 
 def displayCharacterSite():
@@ -165,7 +339,7 @@ def displayCharacterSite():
     sSecurityValue = oInputParameterHandler.getValue('securityCockie')
         
     oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('siteUrl') and oInputParameterHandler.exist('page') and oInputParameterHandler.exist('mediaType')):
+    if (oInputParameterHandler.exist('siteUrl') and oInputParameterHandler.exist('page') and oInputParameterHandler.exist('mediaType')):       
         siteUrl = oInputParameterHandler.getValue('siteUrl')
         iPage = oInputParameterHandler.getValue('page')
         sMediaType = oInputParameterHandler.getValue('mediaType')
@@ -273,7 +447,7 @@ def parseMovieEntrySite():
     oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('movieUrl')):
         sUrl = oInputParameterHandler.getValue('movieUrl')
-
+        
         # get movieEntrySite content
         oRequest = cRequestHandler(sUrl)
         oRequest.addHeaderEntry('Cookie', sSecurityValue)
@@ -283,12 +457,13 @@ def parseMovieEntrySite():
         bIsSerie = __isSerie(sHtmlContent)
         if (bIsSerie):
             aSeriesItems = parseSerieSite(sHtmlContent)
-                        
+
             if (len(aSeriesItems) > 0):
+                __createInfoItem(oGui, sHtmlContent)
                 for aSeriesItem in aSeriesItems:
                     oGuiElement = cGuiElement()
                     oGuiElement.setSiteName(SITE_NAME)
-                    oGuiElement.setTitle(aSeriesItem[0])
+                    oGuiElement.setTitle(aSeriesItem[0])                    
                     oGuiElement.setFunction('displayHoster')
                     
                     oOutputParameterHandler = cOutputParameterHandler()
@@ -300,6 +475,46 @@ def parseMovieEntrySite():
             
 
     oGui.setEndOfDirectory()
+
+def __createInfoItem(oGui, sHtmlContent):
+    sThumbnail = __getThumbnail(sHtmlContent)
+    sDescription = __getDescription(sHtmlContent)
+
+    oGuiElement = cGuiElement()    
+    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setTitle('info')
+    oGuiElement.setThumbnail(sThumbnail)
+    oGuiElement.setFunction('showInfo')
+    oGuiElement.setDescription(sDescription)
+    
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('sThumbnail', sThumbnail)
+    oOutputParameterHandler.addParameter('sDescription', sDescription)
+
+    # [('Jeff Tremaine', 'United States', '~ 94 min.', 'Action', '509.648')]
+    aDetails = __getDetails(sHtmlContent)
+    oOutputParameterHandler.addParameter('aDetails', aDetails)
+
+    oGui.addFolder(oGuiElement, oOutputParameterHandler)
+
+def showInfo():
+    oGui = cGui()
+
+    oInputParameterHandler = cInputParameterHandler()
+    aDetails = {}
+    aDetails = eval(oInputParameterHandler.getValue('aDetails'))
+    
+    oGuiElement = cGuiElement()
+    oGuiElement.setTitle('info')
+    oGuiElement.setThumbnail(oInputParameterHandler.getValue('sThumbnail'))
+    oGuiElement.setDescription(cUtil().removeHtmlTags(oInputParameterHandler.getValue('sDescription'), ''))
+
+    for sKey, sValue in aDetails.iteritems():
+        oGuiElement.addItemValues(str(sKey), sValue)
+  
+    oGui.showInfo(oGuiElement)
+    return
+
 
 def displayHoster(sHtmlContent = ''):
     oGui = cGui()
@@ -316,8 +531,12 @@ def displayHoster(sHtmlContent = ''):
         oRequest.addHeaderEntry('Referer', 'http://kino.to/')
         sHtmlContent = oRequest.request()
 
-
+    
     aHosters = __getMovieHoster(sHtmlContent);
+    
+    if (len(aHosters) > 0):
+        __createInfoItem(oGui, sHtmlContent)
+
     for aHoster in aHosters:
         if (len(aHoster) > 0):
             oGuiElement = cGuiElement()
@@ -462,16 +681,7 @@ def ajaxCall():
                 oGuiElement = cGuiElement()
                 oGuiElement.setSiteName(SITE_NAME)
                 oGuiElement.setFunction('parseMovieEntrySite')
-
-                sLanguageId = aEntry[0]
-                sTitle = aEntry[2]
-                if (sLanguageId == '1'):
-                    sTitle = sTitle + ' (de)'
-                if (sLanguageId == '2'):
-                    sTitle = sTitle + ' (en)'
-
-                oGuiElement.setTitle(sTitle)
-                
+                oGuiElement.setTitle(__createTitleWithLanguage(aEntry[0], aEntry[2]))                
 
                 sUrl = URL_MAIN + str(aEntry[1])
                 sUrl = oParser.replace('\\\\/', '/', sUrl)
@@ -633,17 +843,58 @@ def __parseHosterDefault(sUrl, sHosterName, sHosterFileName, sPattern, sSecurity
                 
 def __getMovieHoster(sHtmlContent):
     aHosters = []
-       
-    aHosters.append(__parseHosterSiteFromSite(sHtmlContent, 'megavideo.com', 'Hoster_2', 'parseMegaVideoCom', 'megavideo'))
-    aHosters.append(__parseHosterSiteFromSite(sHtmlContent, 'duckload.com', 'Hoster_6', 'parseHosterDefault', 'duckload'))
-    aHosters.append(__parseHosterSiteFromSite(sHtmlContent, 'loaded.it', 'Hoster_19', 'parseHosterDefault', 'loadedit'))
-    aHosters.append(__parseHosterSiteFromSite(sHtmlContent, 'sharehoster.com', 'Hoster_3', 'parseHosterDefault', 'sharehoster'))
-    aHosters.append(__parseHosterSiteFromSite(sHtmlContent, 'dataup.to', 'Hoster_8', 'parseHosterDefault', 'dataup'))
-    aHosters.append(__parseHosterSiteFromSite(sHtmlContent, 'quickload.to', 'Hoster_9', 'parseHosterDefault', 'quickload'))
-    aHosters.append(__parseHosterSiteFromSite(sHtmlContent, 'mystream.to', 'Hoster_22', 'parseHosterDefault', 'mystream'))
-    aHosters.append(__parseHosterSiteFromSite(sHtmlContent, 'mystream.to', 'Hoster_10', 'parseHosterDefault', 'mystream'))
-    aHosters.append(__parseHosterSiteFromSite(sHtmlContent, 'skyload.net', 'Hoster_20', 'parseHosterDefault', 'skyload'))
-    aHosters.append(__parseHosterSiteFromSite(sHtmlContent, 'tubeload.to', 'Hoster_18', 'parseHosterDefault', 'tubeload'))
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'megavideo.com', 'Hoster_2', 'parseMegaVideoCom', 'megavideo')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'duckload.com', 'Hoster_6', 'parseHosterDefault', 'duckload')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'loaded.it (Flash)', 'Hoster_37', 'parseHosterDefault', 'loadedit')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'loaded.it (Divx)', 'Hoster_19', 'parseHosterDefault', 'loadedit')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'sharehoster.com', 'Hoster_3', 'parseHosterDefault', 'sharehoster')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'dataup.to', 'Hoster_8', 'parseHosterDefault', 'dataup')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'quickload.to', 'Hoster_9', 'parseHosterDefault', 'quickload')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'mystream.to (Flash)', 'Hoster_22', 'parseHosterDefault', 'mystream')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'mystream.to (Divx)', 'Hoster_10', 'parseHosterDefault', 'mystream')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'tubeload.to (Flash)', 'Hoster_21', 'parseHosterDefault', 'tubeload')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'tubeload.to (Divx)', 'Hoster_18', 'parseHosterDefault', 'tubeload')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'archive.to (Flash)', 'Hoster_4', 'parseHosterDefault', 'archive')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'archive.to (Divx)', 'Hoster_1', 'parseHosterDefault', 'archive')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
         
     return aHosters
 
@@ -660,28 +911,39 @@ def __parseHosterSiteFromSite(sHtmlContent, sHosterName, sHosterId, sHosterMetho
         aHoster.append(sUrl)
         aHoster.append(sHosterMethodeName)
         aHoster.append(sHosterFilename)
-                
-    return aHoster
+        return aHoster
 
-#def __getDescription(sHtmlContent):
-    #sRegex = '<div class="Descriptore">([^<]+)<'
-    #oParser = cParser()
-    #aResult = oParser.parse(sHtmlContent, sRegex, 1)
-    #if (aResult[0] == True):
-    #        print aResult[1]
-    #return ''
+    return False
 
-#def __getThumbnail(sHtmlContent):
-    #sRegex = '<div class="Grahpics">.*? src="([^"]+)"'
-    #oParser = cParser()
-    #aResult = oParser.parse(sHtmlContent, sRegex, 1)
-    #if (aResult[0] == True):
-    #        print aResult[1]
-    #return ''
+def __getDescription(sHtmlContent):
+    sRegex = '<div class="Descriptore">([^<]+)<'
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sRegex, 1)
+    if (aResult[0] == True):
+            return aResult[1][0]
+    return ''
 
-#def __isSerie(sHtmlContent):
-    #sRegex = 'id="SeasonSelection" rel="([^"]+)"'
-    #oParser = cParser()
-    #aResult = oParser.parse(sHtmlContent, sRegex, 1)
-    #return aResult[0]
+def __getThumbnail(sHtmlContent):
+    sRegex = '<div class="Grahpics">.*? src="([^"]+)"'
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sRegex)
+    if (aResult[0] == True):
+            return aResult[1][0]
+    return ''
 
+def __getDetails(sHtmlContent):
+    sRegex = '<li class="DetailDat" title="Director"><span class="Director"></span>(.*?)</li><li class="DetailDat" title="Country"><span class="Country"></span>(.*?)</li><li class="DetailDat" title="Runtime"><span class="Runtime"></span>(.*?)</li><li class="DetailDat" title="Genre"><span class="Genre"></span>(.*?)</li><li class="DetailDat" title="Views"><span class="Views"></span>(.*?)</li>'
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sRegex)
+
+
+    aDetails = {}
+
+    if (aResult[0] == True):
+            aDetails['writer'] = aResult[1][0][0]
+            aDetails['country'] = aResult[1][0][1]
+            aDetails['duration'] = aResult[1][0][2]
+            aDetails['genre'] = aResult[1][0][3]
+            aDetails['playcount'] = oParser.getNumberFromString(aResult[1][0][4])
+            
+    return aDetails
