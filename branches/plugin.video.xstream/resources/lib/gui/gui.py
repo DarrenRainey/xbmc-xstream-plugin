@@ -20,10 +20,10 @@ class cGui:
     def createListItem(self, oGuiElement):
             oListItem = xbmcgui.ListItem(oGuiElement.getTitle(), oGuiElement.getTitleSecond(), oGuiElement.getIcon(), oGuiElement.getThumbnail())
             oListItem.setInfo(oGuiElement.getType(), oGuiElement.getItemValues())
-
+            
             aProperties = oGuiElement.getItemProperties()
             for sPropertyKey in aProperties.keys():
-                oListItem.setProperty(sPropertyKey, aProperties[sPropertyKey])
+                oListItem.setProperty(sPropertyKey, aProperties[sPropertyKey])            
 
             return oListItem
 
@@ -89,3 +89,7 @@ class cGui:
             iSeconds = iSeconds * 1000
         
         xbmc.executebuiltin("Notification(%s,%s,%s)" % (cConfig().getLocalizedString(30308), (cConfig().getLocalizedString(30309) % str(sTitle)), iSeconds))
+
+    def showInfo(self, oGuiElement):
+        oListItem = self.createListItem(oGuiElement)
+        xbmc.executebuiltin("XBMC.Action(info)")        
