@@ -154,8 +154,12 @@ def __getSecurityCookieValue():
     if (aResult[0] == True):
         sScriptFile = URL_MAIN + str(aResult[1][0][0])
         sHashSnippet = str(aResult[1][0][1])
-        
+
+        logger.info('scriptfile: ' + str(sScriptFile))
         oRequestHandler = cRequestHandler(sScriptFile)
+        oRequestHandler.addHeaderEntry('Referer', 'http://kino.to/')
+        oRequestHandler.addHeaderEntry('Accept', '*/*')
+        oRequestHandler.addHeaderEntry('Host', 'kino.to')
         sHtmlContent = oRequestHandler.request()
        
         sPattern = 'escape\(hsh \+ "([^"]+)"\)'
@@ -166,19 +170,16 @@ def __getSecurityCookieValue():
             sHash = aResult[1][0]
            
             sHash = sHashSnippet + sHash           
-            sSecurityCookieValue = 'sitechrx=' + str(sHash)
+            sSecurityCookieValue = 'sitechrx=' + str(sHash) + ';Path=/'
 
             oRequestHandler = cRequestHandler(URL_MAIN + '/')
-            oRequestHandler.addHeaderEntry('Cookie', sSecurityCookieValue)
-            oRequestHandler.addHeaderEntry('Referer', sScriptFile)
+            oRequestHandler.addHeaderEntry('Cookie', sSecurityCookieValue)            
             oRequestHandler.request()
             
-            logger.info('token: ' + str(sSecurityCookieValue))
-            return 'sitechrx=c3d0fa909052b60d5b6c9c293b412102'
+            logger.info('token: ' + str(sSecurityCookieValue))           
             return sSecurityCookieValue
-    else:
-
-        return False
+    
+    return False
 
 def displaySearchSite():
     oGui = cGui()
@@ -244,6 +245,8 @@ def __getHtmlContent():
         oRequest = cRequestHandler(siteUrl)
         oRequest.addHeaderEntry('Cookie', sSecurityValue)
         oRequest.addHeaderEntry('Referer', 'http://kino.to/')
+        oRequest.addHeaderEntry('Accept', '*/*')
+        oRequest.addHeaderEntry('Host', 'kino.to')
         return oRequest.request()
     
     return ''
