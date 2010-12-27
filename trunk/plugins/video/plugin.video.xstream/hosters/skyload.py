@@ -29,7 +29,7 @@ class cHoster:
         if (aResult[0] == True):
             self.__sUrl = aResult[1][0]
             print(self.__sUrl)
-
+           
             oHosterHandler = cHosterHandler()
             return oHosterHandler.getUrl(self)
 
