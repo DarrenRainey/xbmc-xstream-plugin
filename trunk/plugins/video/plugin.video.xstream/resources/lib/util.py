@@ -23,3 +23,6 @@ class cUtil:
 
     def urlDecode(self, sUrl):
         return urllib.unquote(sUrl)
+
+    def unquotePlus(self, sUrl):
+        return urllib.unquote_plus(sUrl)
