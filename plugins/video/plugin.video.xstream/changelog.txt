@@ -1,4 +1,21 @@
 ================================================================================
+- Version 0.4.0 - 27.12.2010
+================================================================================
+    - add downloadfunction to kino.to, iload.to hosters (contextmenu)
+    - add new site iload.to
+
+    - fix southpark.de
+    - fix kino.to
+
+    - fix hosters:
+        - archive
+
+    - add hosters
+        - skyload
+        - filestage
+        - fullshare        
+
+================================================================================
 - Version 0.3.4 - 08.11.2010
 ================================================================================
     - fix kino.to token (cookie)
