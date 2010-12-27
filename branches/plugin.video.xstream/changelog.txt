@@ -1,18 +1,19 @@
 ================================================================================
 - Version 0.3.5 - 27.12.2010
 ================================================================================
+    - add downloadfunction to kino.to hosters (contextmenu)
+    - add new site iload.to
+
     - fix southpark
     - fix kino.to
 
     - fix hosters:
         - archive
 
-    - add hosters (to kino.to)
+    - add hosters
         - skyload
         - filestage
-        - fullshare
-        
-    - add downloadfunction to kino.to hosters (contextmenu)
+        - fullshare        
 
 ================================================================================
 - Version 0.3.4 - 08.11.2010

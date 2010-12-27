@@ -71,6 +71,10 @@ class cPluginHandler:
         if (bPlugin == 'true'):
             aPlugins.append(self.__createAvailablePluginsItem('30213', 'simpsons_to'))
 
+        bPlugin = oConfig.getSetting('plugin_iload_to')
+        if (bPlugin == 'true'):
+            aPlugins.append(self.__createAvailablePluginsItem('30214', 'iload_to'))
+
         return aPlugins
 
     def __createAvailablePluginsItem(self, iPluginStringId, sPluginIdentifier):
