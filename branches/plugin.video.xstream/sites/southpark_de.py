@@ -51,7 +51,7 @@ def displaySeasions():
         sLanguage = ''
 
     oGui = cGui()
-    sPattern = '<li><a href="([^"]+)">([^<]+)</a></li>'
+    sPattern = '<li><a href="/guide/episoden([^"]+)">([^<]+)</a></li>'
     
     # request
     oRequest = cRequestHandler(URL_MAIN)

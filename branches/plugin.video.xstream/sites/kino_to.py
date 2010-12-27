@@ -810,7 +810,10 @@ def __createAjaxUrl(sMediaType, iPage, iMediaTypePageId, sCharacter='A'):
 
 def __parseHosterDefault(sUrl, sHosterName, sHosterFileName, sPattern, sSecurityValue):
     if (sPattern == False):
-        sPattern = 'div><a href=\\\\"([^"]+)\\\\'
+        #sPattern = 'div><a href=\\\\"([^"]+)\\\\'
+        sPattern = 'href=\\\\"([^"]+)\\\\" alt=\\\\"Watch\\\\"'
+        
+        
     
     sUrl = sUrl.replace('&amp;', '&')
 
