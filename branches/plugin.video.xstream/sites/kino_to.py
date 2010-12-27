@@ -8,6 +8,8 @@ from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.parser import cParser
 from resources.lib.player import cPlayer
 from resources.lib.util import cUtil
+from resources.lib.gui.contextElement import cContextElement
+from resources.lib.download import cDownload
 
 SITE_NAME = 'kino_to'
 URL_MAIN = 'http://kino.to'
@@ -645,6 +647,25 @@ def playMovieFromHoster():
 
     oGui.setEndOfDirectory()
 
+def downloadStreamFile():
+
+    oInputParameterHandler = cInputParameterHandler()
+    if (oInputParameterHandler.exist('sHosterFileName') and oInputParameterHandler.exist('linkToHosterMediaFile')):
+        sHosterFileName = oInputParameterHandler.getValue('sHosterFileName')
+        linkToHosterMediaFile = oInputParameterHandler.getValue('linkToHosterMediaFile')
+
+         #try:
+        exec "from " + sHosterFileName + " import cHoster"
+        oHoster = cHoster()
+        oHoster.setUrl(linkToHosterMediaFile)
+        aLink = oHoster.getMediaLink()
+        if (aLink[0] == True):
+            cDownload().download(aLink[1], 'filename')            
+            return
+
+        #except:
+        #    logger.fatal('could not load plugin: ' + sHosterFileName)
+
 def ajaxCall():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
@@ -816,6 +837,7 @@ def __parseHosterDefault(sUrl, sHosterName, sHosterFileName, sPattern, sSecurity
         
     
     sUrl = sUrl.replace('&amp;', '&')
+    logger.info(sUrl)
 
     oRequest = cRequestHandler(sUrl)
     oRequest.addHeaderEntry('Cookie', sSecurityValue)
@@ -842,6 +864,16 @@ def __parseHosterDefault(sUrl, sHosterName, sHosterFileName, sPattern, sSecurity
             oOutputParameterHandler.addParameter('sHosterFileName', sHosterFileName)
             oOutputParameterHandler.addParameter('linkToHosterMediaFile', sPartUrl)
 
+            # download context menu
+            oContextElement = cContextElement()
+            oContextElement.setTitle('Download')
+            oContextElement.setFile(SITE_NAME)
+            oContextElement.setFunction('downloadStreamFile')
+            oOutputParameterHandlerDownload = cOutputParameterHandler()
+            oOutputParameterHandlerDownload.addParameter('sHosterFileName', sHosterFileName)
+            oOutputParameterHandlerDownload.addParameter('linkToHosterMediaFile', sPartUrl)
+            oContextElement.setOutputParameterHandler(oOutputParameterHandlerDownload)
+            oGuiElement.addContextItem(oContextElement)
             oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
@@ -899,6 +931,18 @@ def __getMovieHoster(sHtmlContent):
         aHosters.append(aHosterItem)
 
     aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'archive.to (Divx)', 'Hoster_1', 'parseHosterDefault', 'archive')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'skyload.net (Divx)', 'Hoster_41', 'parseHosterDefault', 'skyload')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'filestage.to', 'Hoster_40', 'parseHosterDefault', 'filestage')
+    if (aHosterItem != False):
+        aHosters.append(aHosterItem)
+
+    aHosterItem = __parseHosterSiteFromSite(sHtmlContent, 'fullshare.net', 'Hoster_12', 'parseHosterDefault', 'fullshare')
     if (aHosterItem != False):
         aHosters.append(aHosterItem)
         

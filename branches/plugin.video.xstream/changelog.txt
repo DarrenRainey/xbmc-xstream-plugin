@@ -3,7 +3,16 @@
 ================================================================================
     - fix southpark
     - fix kino.to
-    - fix archive hosters
+
+    - fix hosters:
+        - archive
+
+    - add hosters (to kino.to)
+        - skyload
+        - filestage
+        - fullshare
+        
+    - add downloadfunction to kino.to hosters (contextmenu)
 
 ================================================================================
 - Version 0.3.4 - 08.11.2010
