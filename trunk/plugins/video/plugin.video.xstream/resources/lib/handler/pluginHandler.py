@@ -75,6 +75,10 @@ class cPluginHandler:
         if (bPlugin == 'true'):
             aPlugins.append(self.__createAvailablePluginsItem('30214', 'iload_to'))
 
+        bPlugin = oConfig.getSetting('plugin_br_online_de')
+        if (bPlugin == 'true'):
+            aPlugins.append(self.__createAvailablePluginsItem('30215', 'br_online_de'))
+
         return aPlugins
 
     def __createAvailablePluginsItem(self, iPluginStringId, sPluginIdentifier):

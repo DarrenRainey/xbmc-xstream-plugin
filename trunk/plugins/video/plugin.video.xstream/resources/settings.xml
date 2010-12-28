@@ -17,4 +17,5 @@
     <setting id="plugin_movie2k_com" type="bool" label="30112" default="false"/>
     <setting id="plugin_simpsons_to" type="bool" label="30113" default="false"/>
     <setting id="plugin_iload_to" type="bool" label="30114" default="false"/>
+    <setting id="plugin_br_online_de" type="bool" label="30115" default="false"/>
 </settings>
