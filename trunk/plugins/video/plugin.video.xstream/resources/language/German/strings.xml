@@ -2,6 +2,7 @@
 <strings>
         <string id="30000">Logging</string>
         <string id="30001">Videoplayer</string>
+        <string id="30002">anonyme Statistiken (wertet nur Plugin Start aus)</string>
 
         <!-- Plugins begin by 30100 -->
         <string id="30101">Plugin Kino.to anschalten</string>
@@ -19,6 +20,7 @@
         <string id="30113">Plugin Simpsons.to anschalten</string>
         <string id="30114">Plugin Iload.to anschalten</string>
         <string id="30115">Plugin Br-Online.de anschalten</string>
+        <string id="30116">Plugin Anime-stream24.com anschalten</string>
 
         <!-- Pluginsname  -->
         <string id="30201">Kino.to</string>
@@ -36,6 +38,7 @@
         <string id="30213">Simpsons.to</string>
         <string id="30214">Iload.to</string>
         <string id="30215">Br-Online.de</string>
+        <string id="30216">Anime-stream24.com</string>
 
         <string id="30302">Staffeln Deutsch</string>
         <string id="30303">Staffeln Englisch</string>

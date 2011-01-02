@@ -13,6 +13,15 @@ from resources.lib.download import cDownload
 SITE_NAME = 'br_online_de'
 URL_MAIN = 'http://www.br-online.de'
 URL_CENTAURI = 'http://www.br-online.de/br-alpha/alpha-centauri/alpha-centauri-harald-lesch-videothek-ID1207836664586.xml'
+URL_DARWIN = 'http://www.br-online.de/br-alpha/charles-darwin/charles-darwin-evolution-videothek-ID1256655423519.xml'
+URL_DENKER = 'http://www.br-online.de/br-alpha/denker-des-abendlandes/denker-lesch-vossenkuhl-ID1221136938708.xml'
+URL_GEISTundGEHIRN = 'http://www.br-online.de/br-alpha/geist-und-gehirn/index.xml'
+URL_KANT1 = 'http://www.br-online.de/br-alpha/kant-fuer-anfaenger/kant-reine-vernunft-philosophie-ID661188595418.xml'
+URL_KANT2 = 'http://www.br-online.de/br-alpha/kant-fuer-anfaenger/kant-kategorischer-imperativ-philosophie-ID661188595399.xml'
+URL_MATHE = 'http://www.br-online.de/br-alpha/mathematik-zum-anfassen/index.xml'
+URL_MYTHEN = 'http://www.br-online.de/br-alpha/mythen/index.xml'
+URL_PHYSIK_EINSTEIN = 'http://www.br-online.de/br-alpha/die-physik-albert-einsteins/die-physik-albert-einsteins-lesch-einstein-ID1221487435226.xml'
+URL_ELEMENTE = 'http://www.br-online.de/br-alpha/die-4-elemente/die-4-elemente-elemente-harald-lesch-ID1225290580446.xml'
 
 def load():
     logger.info('load br-online.de :)')
@@ -21,7 +30,43 @@ def load():
 
     oOutputParameterHandler = cOutputParameterHandler()
     oOutputParameterHandler.addParameter('siteUrl', URL_CENTAURI)
-    __createMenuEntry(oGui, 'showCentauriVideothek', 'Alpha-Centauri', oOutputParameterHandler)
+    __createMenuEntry(oGui, 'showBRonlineVideothek', 'Alpha-Centauri', oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_DARWIN)
+    __createMenuEntry(oGui, 'showBRonlineMovies', 'Charles Darwin', oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_DENKER)
+    __createMenuEntry(oGui, 'showBRonlineMovies', 'Denker des Abendlandes', oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_GEISTundGEHIRN)
+    __createMenuEntry(oGui, 'showBRonlineVideothekSeasons', 'Geist und Gehirn', oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_KANT1)
+    __createMenuEntry(oGui, 'showBRonlineMovies', 'Kant fuer Anfaenger - Die Kritik der reinen Vernunft', oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_KANT2)
+    __createMenuEntry(oGui, 'showBRonlineMovies', 'Kant fuer Anfaenger - Der kategorische Imperativ', oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_MATHE)
+    __createMenuEntry(oGui, 'showBRonlineVideothekSeasons', 'Mathematik zum Anfassen', oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_MYTHEN)
+    __createMenuEntry(oGui, 'showBRonlineVideothekSeasons', 'Mythen', oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_PHYSIK_EINSTEIN)
+    __createMenuEntry(oGui, 'showBRonlineMovies', 'Die Physik Albert Einsteins', oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_ELEMENTE)
+    __createMenuEntry(oGui, 'showBRonlineMovies', 'Die 4 Elemente', oOutputParameterHandler)
     
     oGui.setEndOfDirectory()
 
@@ -32,7 +77,40 @@ def __createMenuEntry(oGui, sFunction, sLabel, oOutputParameterHandler = ''):
     oGuiElement.setTitle(sLabel)
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
-def showCentauriVideothek():
+def showBRonlineVideothekSeasons():
+    oGui = cGui()
+    oInputParameterHandler = cInputParameterHandler()
+    sUrl = oInputParameterHandler.getValue('siteUrl')
+
+    oRequestHandler = cRequestHandler(sUrl)
+    sHtmlContent = oRequestHandler.request();
+
+    sPattern = '<ul class="ebene1">(.*?)</ul>'
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+    if (aResult[0] == True):
+        sHtmlContent = aResult[1][0]
+
+        sPattern = '<li><a href="([^"]+)">(.*?)</a>'
+        oParser = cParser()
+        aResult = oParser.parse(sHtmlContent, sPattern)
+        if (aResult[0] == True):
+            for aEntry in aResult[1]:
+                oGuiElement = cGuiElement()
+                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setFunction('showBRonlineMovies')
+                oGuiElement.setTitle(aEntry[1])
+
+                oOutputParameterHandler = cOutputParameterHandler()
+                oOutputParameterHandler.addParameter('siteUrl', URL_MAIN + str(aEntry[0]))
+                oGui.addFolder(oGuiElement, oOutputParameterHandler)
+
+    oGui.setEndOfDirectory()
+   
+
+
+
+def showBRonlineVideothek():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
     sUrl = oInputParameterHandler.getValue('siteUrl')
@@ -47,7 +125,7 @@ def showCentauriVideothek():
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
             oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setFunction('showCentauriMovies')
+            oGuiElement.setFunction('showBRonlineMovies')
             oGuiElement.setThumbnail(URL_MAIN + str(aEntry[1]))
             oGuiElement.setTitle(aEntry[2])
 
@@ -57,7 +135,7 @@ def showCentauriVideothek():
 
     oGui.setEndOfDirectory()
     
-def showCentauriMovies():
+def showBRonlineMovies():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
     sUrl = oInputParameterHandler.getValue('siteUrl')
@@ -66,14 +144,14 @@ def showCentauriMovies():
     sHtmlContent = oRequestHandler.request();
     
     sPattern = '<h3 class="teaserHead">.*?<a href="([^"]+)".*?<span class="versteckt">(.*?)</span>'
-    __showCentauriMovies(oGui, sHtmlContent, sPattern)
+    __showBRonlineMovies(oGui, sHtmlContent, sPattern)
 
     sPattern = '<h3 class="linkPkt">.*?<a href="([^"]+)".*?<span class="versteckt">(.*?)</span>'
-    __showCentauriMovies(oGui, sHtmlContent, sPattern)
+    __showBRonlineMovies(oGui, sHtmlContent, sPattern)
 
     oGui.setEndOfDirectory()
 
-def __showCentauriMovies(oGui, sHtmlContent, sPattern):
+def __showBRonlineMovies(oGui, sHtmlContent, sPattern):
     oParser = cParser()
     aResult = oParser.parse(sHtmlContent, sPattern)
     if (aResult[0] == True):

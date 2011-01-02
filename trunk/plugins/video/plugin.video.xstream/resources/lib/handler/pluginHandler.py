@@ -79,6 +79,10 @@ class cPluginHandler:
         if (bPlugin == 'true'):
             aPlugins.append(self.__createAvailablePluginsItem('30215', 'br_online_de'))
 
+        bPlugin = oConfig.getSetting('plugin_anime_stream24_com')
+        if (bPlugin == 'true'):
+            aPlugins.append(self.__createAvailablePluginsItem('30216', 'anime_stream24_com'))
+
         return aPlugins
 
     def __createAvailablePluginsItem(self, iPluginStringId, sPluginIdentifier):

@@ -1,3 +1,4 @@
+from resources.lib.statistic import cStatistic
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.gui.gui import cGui
 from resources.lib.handler.pluginHandler import cPluginHandler
@@ -26,9 +27,13 @@ def parseUrl():
             logger.info('call load methode')
             sFunction = "load"
 
-    if (oInputParameterHandler.exist('site')):            
+    if (oInputParameterHandler.exist('site')):
             sSiteName = oInputParameterHandler.getValue('site')
             logger.info('load sitename ' + sSiteName + ' and call function ' + sFunction)
+
+            if (sFunction == 'load'):
+                cStatistic().callStartPlugin(sSiteName)
+
             #try:
             exec "import " + sSiteName + " as plugin"
             exec "plugin."+ sFunction +"()"
@@ -38,8 +43,8 @@ def parseUrl():
             oGui = cGui()
             oPluginHandler = cPluginHandler()
             aPlugins = oPluginHandler.getAvailablePlugins()
-            if (len(aPlugins) == 0):                
-                oGui.openSettings()                
+            if (len(aPlugins) == 0):
+                oGui.openSettings()
             else:
                 for aPlugin in aPlugins:
                     oGuiElement = cGuiElement()
