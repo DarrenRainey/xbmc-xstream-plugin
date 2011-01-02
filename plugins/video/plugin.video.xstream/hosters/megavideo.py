@@ -9,9 +9,24 @@ class cHoster:
     def getPattern(self):
         return ' errortext="(.+?)"'
 
-    def setUrl(self, sUrl):
+    def setUrl(self, sUrl):        
+        sUrl = str(self.__modifyUrl(sUrl))
         sUrl = sUrl.replace('http://www.megavideo.com/?v=', '')
         self.__sUrl = 'http://www.megavideo.com/xml/videolink.php?v=' + str(sUrl)
+
+    def __modifyUrl(self, sUrl):
+        if (sUrl.startswith('http://www.megavideo.com/v/')):
+            oRequestHandler = cRequestHandler(sUrl)
+            oRequestHandler.request()
+            sRealUrl = oRequestHandler.getRealUrl()
+
+            sPattern = "v=([^&]+)"
+            oParser = cParser()
+            aResult = oParser.parse(sRealUrl, sPattern)            
+            if (aResult[0] == True):
+                return (aResult[1][0])
+
+        return sUrl;
 
     def checkUrl(self, sUrl):
         return True
