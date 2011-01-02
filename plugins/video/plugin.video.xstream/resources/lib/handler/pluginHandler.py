@@ -83,6 +83,10 @@ class cPluginHandler:
         if (bPlugin == 'true'):
             aPlugins.append(self.__createAvailablePluginsItem('30216', 'anime_stream24_com'))
 
+        bPlugin = oConfig.getSetting('plugin_radiotime_com')
+        if (bPlugin == 'true'):
+            aPlugins.append(self.__createAvailablePluginsItem('30217', 'radiotime_com'))
+
         return aPlugins
 
     def __createAvailablePluginsItem(self, iPluginStringId, sPluginIdentifier):
