@@ -25,7 +25,7 @@ def load():
     __createMainMenuItem(oGui, 'Action / Thriller' , '22')
     __createMainMenuItem(oGui, 'Drama', '6')
     __createMainMenuItem(oGui, 'Horror', '8')
-    __createMainMenuItem(oGui, 'Komoedie', '9')
+    __createMainMenuItem(oGui, 'Komoedie', '75')
     __createMainMenuItem(oGui, 'Krimi', '11')
     __createMainMenuItem(oGui, 'Romance', '23')
     __createMainMenuItem(oGui, 'Serie', '58')
