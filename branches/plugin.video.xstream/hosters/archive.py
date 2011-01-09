@@ -1,8 +1,25 @@
+from hosters.hoster import iHoster
 from resources.lib.handler.hosterHandler import cHosterHandler
 
-class cHoster:
-    def getName(self):
-        return 'Archive.to'
+class cHoster(iHoster):
+
+    def __init__(self):
+        self.__sDisplayName = 'Archive.to'
+
+    def getDisplayName(self):
+        return  self.__sDisplayName
+
+    def setDisplayName(self, sDisplayName):
+        self.__sDisplayName = sDisplayName
+
+    def getPluginIdentifier(self):
+        return 'archive'
+
+    def isDownloadable(self):
+        return True
+    
+    def isJDownloaderable(self):
+        return True
 
     def getPattern(self):
         return '<a href="([^"]+)">Download</a></b>'
@@ -17,6 +34,9 @@ class cHoster:
         return self.__sUrl
 
     def getMediaLink(self):
+        return self.__getMediaLinkForGuest()
+
+    def __getMediaLinkForGuest(self):
         oHosterHandler = cHosterHandler()
         aUrl = oHosterHandler.getUrl(self)
 
@@ -24,4 +44,3 @@ class cHoster:
             return True, str(aUrl[1]).replace(':80', '')
 
         return aUrl
-

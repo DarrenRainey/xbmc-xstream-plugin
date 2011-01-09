@@ -6,10 +6,12 @@ from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.gui.gui import cGui
 from resources.lib.player import cPlayer
-import logger
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 
 
-SITE_NAME = 'southpark_de'
+SITE_IDENTIFIER = 'southpark_de'
+SITE_NAME = 'Southpark.de'
 
 URL_MAIN = 'http://www.southpark.de'
 URL_SEASION = 'http://www.southpark.de/ajax/seasonepisode/'
@@ -18,13 +20,11 @@ URL_MTVN_SERVICES = 'http://media.mtvnservices.com/'
 URL_FEEDS = 'http://www.southpark.de/feeds/as3player/config.php'
 
 def load():
-    logger.info('load southpark :)')
-
     oConfig = cConfig()
     oGui = cGui()
 
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('displaySeasions')
     oGuiElement.setTitle(oConfig.getLocalizedString(30302))
     oOutputParameterHandler = cOutputParameterHandler()
@@ -32,7 +32,7 @@ def load():
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('displaySeasions')
     oGuiElement.setTitle(oConfig.getLocalizedString(30303))
     oOutputParameterHandler = cOutputParameterHandler()
@@ -64,7 +64,7 @@ def displaySeasions():
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('displayEpisodes')
             sTitle = oConfig.getLocalizedString(30305) % (str(aEntry[1]))
             oGuiElement.setTitle(sTitle)
@@ -92,7 +92,7 @@ def displayEpisodes():
     oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('siteUrl')):
         sSiteUrl = oInputParameterHandler.getValue('siteUrl')
-        logger.info(sSiteUrl)
+        
         # request
         oRequest = cRequestHandler(sSiteUrl)
         sHtmlContent = oRequest.request()
@@ -105,7 +105,7 @@ def displayEpisodes():
             iCounter = 1
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('parseMovieFromSite')
 
                 sTitle = str(iCounter) + '. ' + str(aEntry[4])
@@ -163,19 +163,15 @@ def parseMovieFromSite():
                         iPartDuration = aPart[1]
                         iEndDuration = iDuration + int(iPartDuration)
 
-                        oGuiElement = cGuiElement()
-                        oGuiElement.setSiteName(SITE_NAME)                        
-                        oGuiElement.setFunction('playMoviePart')
-
+                        oHoster = cHosterHandler().getHoster('southpark')
                         sTitle = oConfig.getLocalizedString(30306) % (str(iDuration), str(iEndDuration))
-                        oGuiElement.setTitle(sTitle)
-                        oOutputParameterHandler = cOutputParameterHandler()
-                        oOutputParameterHandler.addParameter('siteUrl', sPartUrl)
-                        oGui.addFolder(oGuiElement, oOutputParameterHandler)
+                        oHoster.setDisplayName(sTitle)
+                        cHosterGui().showHoster(oGui, oHoster, sPartUrl)
+                     
                         iDuration = iEndDuration
 
                     oGuiElement = cGuiElement()
-                    oGuiElement.setSiteName(SITE_NAME)
+                    oGuiElement.setSiteName(SITE_IDENTIFIER)
                     oGuiElement.setFunction('playAllMovieParts')
                     oGuiElement.setTitle(oConfig.getLocalizedString(30307))
                     oOutputParameterHandler = cOutputParameterHandler()
@@ -193,15 +189,15 @@ def playAllMovieParts():
         sParts = oInputParameterHandler.getValue('aParts')
         aParts = eval(sParts)
 
-        from southpark import cHoster
         oPlayer = cPlayer()
         for sPartUrl in aParts:
-            oHoster = cHoster()
+            oHoster = cHosterHandler().getHoster('southpark')
             oHoster.setUrl(sPartUrl)
+           
             aLink = oHoster.getMediaLink()            
             if (aLink[0] == True):
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setMediaUrl(aLink[1])
                 oPlayer.addItemToPlaylist(oGuiElement)
        
@@ -209,28 +205,3 @@ def playAllMovieParts():
         return
         
     oGui.setEndOfDirectory()
-
-def playMoviePart():
-    oGui = cGui()
-
-    oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('siteUrl')):
-        sSiteUrl = oInputParameterHandler.getValue('siteUrl')
-        
-        from southpark import cHoster
-        oHoster = cHoster()
-        oHoster.setUrl(sSiteUrl)
-        aLink = oHoster.getMediaLink()
-        if (aLink[0] == True):
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setMediaUrl(aLink[1])
-
-            oPlayer = cPlayer()
-            oPlayer.addItemToPlaylist(oGuiElement)
-            oPlayer.startPlayer()
-            return
-            
-    oGui.setEndOfDirectory()
-
-    

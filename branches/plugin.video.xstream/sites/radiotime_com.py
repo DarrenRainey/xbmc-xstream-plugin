@@ -1,4 +1,3 @@
-
 from resources.lib.util import cUtil
 from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
 from resources.lib.handler.inputParameterHandler import cInputParameterHandler
@@ -6,10 +5,11 @@ from resources.lib.parser import cParser
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.gui.gui import cGui
-from resources.lib.player import cPlayer
-import logger
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 
-SITE_NAME = 'radiotime_com'
+SITE_IDENTIFIER = 'radiotime_com'
+SITE_NAME = 'RadioTime.com'
 
 URL_MAIN = 'http://radiotime.com'
 URL_REGION = 'http://radiotime.com/region/'
@@ -23,48 +23,29 @@ URL_SPECIAL_SPORT = 'http://radiotime.com/channel/c_424726/RadioTime_Sports.aspx
 URL_SEARCH = 'http://radiotime.com/Search.aspx?query='
 URL_PLAY = 'http://radiotime.com/WebTuner.aspx?StationId='
 
-def load():
-    logger.info('load radiotime.com :)')
+def load():    
     oGui = cGui()
 
     sLokalUrl = __getLocalRadioUrl()
-    if (sLokalUrl != False):
-        oOutputParameterHandler = cOutputParameterHandler()
-        oOutputParameterHandler.addParameter('siteUrl', sLokalUrl)
-        __createMenuEntry(oGui, 'showMenuEntries', 'Lokal Radio (Radio in deiner Naehe)', oOutputParameterHandler)
+    if (sLokalUrl != False):        
+        __createMenuEntry(oGui, 'showMenuEntries', 'Lokal Radio (Radio in deiner Naehe)', sLokalUrl)
 
-    oOutputParameterHandler = cOutputParameterHandler()
-    oOutputParameterHandler.addParameter('siteUrl', URL_TALK)
-    __createMenuEntry(oGui, 'showMenuEntries', 'nach Sendungen', oOutputParameterHandler)
-
-    oOutputParameterHandler = cOutputParameterHandler()
-    oOutputParameterHandler.addParameter('siteUrl', URL_MUSIC)
-    __createMenuEntry(oGui, 'showMenuEntries', 'nach Musikrichtungen', oOutputParameterHandler)
-
-    oOutputParameterHandler = cOutputParameterHandler()
-    oOutputParameterHandler.addParameter('siteUrl', URL_SPORT)
-    __createMenuEntry(oGui, 'showMenuEntries', 'nach Sportarten', oOutputParameterHandler)
-
-    oOutputParameterHandler = cOutputParameterHandler()
-    oOutputParameterHandler.addParameter('siteUrl', URL_LOCATION)
-    __createMenuEntry(oGui, 'showMenuEntries', 'nach Orte', oOutputParameterHandler)
-
-    oOutputParameterHandler = cOutputParameterHandler()
-    oOutputParameterHandler.addParameter('siteUrl', URL_SPECIAL_SPORT)
-    __createMenuEntry(oGui, 'showMenuEntries', 'Spezielle Sportsendungen', oOutputParameterHandler)
-
-    oOutputParameterHandler = cOutputParameterHandler()
-    oOutputParameterHandler.addParameter('siteUrl', URL_MAIN)
-    __createMenuEntry(oGui, 'showSearch', 'Suche', oOutputParameterHandler)
+    __createMenuEntry(oGui, 'showMenuEntries', 'nach Sendungen', URL_TALK)
+    __createMenuEntry(oGui, 'showMenuEntries', 'nach Musikrichtungen', URL_MUSIC)
+    __createMenuEntry(oGui, 'showMenuEntries', 'nach Sportarten', URL_SPORT)
+    __createMenuEntry(oGui, 'showMenuEntries', 'nach Orte', URL_LOCATION)
+    __createMenuEntry(oGui, 'showMenuEntries', 'Spezielle Sportsendungen', URL_SPECIAL_SPORT)
+    __createMenuEntry(oGui, 'showSearch', 'Suche', URL_MAIN)
 
     oGui.setEndOfDirectory()
 
-
-def __createMenuEntry(oGui, sFunction, sLabel, oOutputParameterHandler = ''):
+def __createMenuEntry(oGui, sFunction, sLabel, sUrl):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction(sFunction)
     oGuiElement.setTitle(sLabel)
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', sUrl)
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
 def __getLocalRadioUrl():
@@ -124,7 +105,7 @@ def __showSearchRefinePage(oGui, sHtmlContent):
         for aEntry in aResult[1]:
             if (str(aEntry[0]) != 'Mehr dazu im... Radio'):
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('showMenuEntries')
                 oGuiElement.setTitle(str(aEntry[2]))
 
@@ -151,7 +132,7 @@ def __showStations(oGui, sHtmlContent):
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('showStreams')
             oGuiElement.setTitle('[R] ' + str(aEntry[2]) + ' (' + cUtil().removeHtmlTags(str(aEntry[3])).replace('\t', '') + ')' )
             oGuiElement.setThumbnail(str(aEntry[0]))
@@ -169,15 +150,13 @@ def __showStationsMore(oGui, sHtmlContent):
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('showStreams')
             oGuiElement.setTitle('[R] ' + str(aEntry[1]) + ' - ' + str(aEntry[2]) + ' (' + str(aEntry[3]) + ')')
            
             oOutputParameterHandler = cOutputParameterHandler()
             oOutputParameterHandler.addParameter('siteUrl', URL_PLAY + str(aEntry[0]))
             oGui.addFolder(oGuiElement, oOutputParameterHandler)
-
-
 
 def showStreams():
     oGui = cGui()
@@ -194,30 +173,10 @@ def showStreams():
         
     if (aResult[0] == True):
         for aEntry in aResult[1]:
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setFunction('play')
-            oGuiElement.setTitle('Format: ' + str(aEntry[2]) + ' - Quality: ' + str(aEntry[1]))
-            oGuiElement.setThumbnail(str(aEntry[0]))
-
-            oOutputParameterHandler = cOutputParameterHandler()
-            oOutputParameterHandler.addParameter('siteUrl',  str(aEntry[0]))
-            oGui.addFolder(oGuiElement, oOutputParameterHandler)
+            oHoster = cHosterHandler().getHoster('radiotime')
+            sTitle = 'Format: ' + str(aEntry[2]) + ' - Quality: ' + str(aEntry[1])
+            oHoster.setDisplayName(sTitle)
+            cHosterGui().showHoster(oGui, oHoster, str(aEntry[0]))
 
     oGui.setEndOfDirectory()
-  
-
-def play():
-    oGui = cGui()
-    oInputParameterHandler = cInputParameterHandler()
-    sUrl = oInputParameterHandler.getValue('siteUrl')
-
-    oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
-    oGuiElement.setMediaUrl(sUrl)
-
-    oPlayer = cPlayer()
-    oPlayer.addItemToPlaylist(oGuiElement)
-    oPlayer.startPlayer()
-    return
 

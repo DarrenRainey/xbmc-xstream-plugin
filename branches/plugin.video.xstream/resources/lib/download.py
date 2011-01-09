@@ -3,6 +3,7 @@ import urllib2
 import xbmc
 import xbmcgui
 import string
+import logger
 
 class cDownload:
 
@@ -33,6 +34,7 @@ class cDownload:
                 sDownloadPath = xbmc.translatePath(sPath +  '%s' % (self.__sTitle, ))
 
                 try:
+                    logger.info('download file: ' + str(sUrl))
                     self.__createProcessDialog()
                     self.__download(urllib2.urlopen(sUrl), sDownloadPath)   
                 except:

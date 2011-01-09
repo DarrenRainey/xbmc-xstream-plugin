@@ -4,11 +4,12 @@ from resources.lib.parser import cParser
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.gui.gui import cGui
-from resources.lib.player import cPlayer
 from resources.lib.util import cUtil
-import logger
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 
-SITE_NAME = 'mtv_de'
+SITE_IDENTIFIER = 'mtv_de'
+SITE_NAME = 'MTV.de'
 
 URL_MAIN = 'http://www.mtv.de'
 URL_VIDEOS = 'http://www.mtv.de/videos'
@@ -21,46 +22,27 @@ URL_SEARCH = 'http://www.mtv.de/videos/search'
 ENTRIES_PER_PAGE = 30
 
 def load():
-    logger.info('load mtv :)')
-    
     oGui = cGui()
-    __createMainMenuItem(oGui, 'Neuste Videos', 'latest')
-    __createMainMenuItem(oGui, 'Meist gesehende Videos' , 'views')
-    __createMainMenuItem(oGui, 'Beste Bewertungs Videos', 'rating')
-
-    oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
-    oGuiElement.setFunction('showShows')
-    oGuiElement.setTitle('Shows')
-    oGui.addFolder(oGuiElement)
-
-    oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
-    oGuiElement.setFunction('showCharts')
-    oGuiElement.setTitle('Charts')
-    oGui.addFolder(oGuiElement)
-
-    oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
-    oGuiElement.setFunction('showVideoCharts')
-    oGuiElement.setTitle('VideoCharts')
-    oGui.addFolder(oGuiElement)
-
-    oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
-    oGuiElement.setFunction('showSearch')
-    oGuiElement.setTitle('Suche')
-    oGui.addFolder(oGuiElement)
+    __createMainMenuItem(oGui, 'Neuste Videos', 'listVideos', 'latest')
+    __createMainMenuItem(oGui, 'Meist gesehende Videos', 'listVideos', 'views')
+    __createMainMenuItem(oGui, 'Beste Bewertungs Videos', 'listVideos', 'rating')
+    __createMainMenuItem(oGui, 'Shows', 'showShows')
+    __createMainMenuItem(oGui, 'Charts', 'showCharts')
+    __createMainMenuItem(oGui, 'VideoCharts', 'showVideoCharts')
+    __createMainMenuItem(oGui, 'Suche', 'showSearch')
     oGui.setEndOfDirectory()
 
-def __createMainMenuItem(oGui, sTitle, sOrderBy):
+def __createMainMenuItem(oGui, sTitle, sFunction, sOrderBy = False):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
-    oGuiElement.setFunction('listVideos')
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
+    oGuiElement.setFunction(sFunction)
     oGuiElement.setTitle(sTitle)
-    oOutputParameterHandler = cOutputParameterHandler()
-    oOutputParameterHandler.addParameter('orderBy', sOrderBy)
-    oGui.addFolder(oGuiElement, oOutputParameterHandler)
+    if (sOrderBy != False):
+        oOutputParameterHandler = cOutputParameterHandler()
+        oOutputParameterHandler.addParameter('orderBy', sOrderBy)
+        oGui.addFolder(oGuiElement, oOutputParameterHandler)
+    else:
+        oGui.addFolder(oGuiElement)
 
 def listVideos():
     oGui = cGui()
@@ -85,17 +67,8 @@ def listVideos():
         
         if (aResult[0] == True):
             for aEntry in aResult[1]:
-                oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
-                oGuiElement.setFunction('play')
-                oGuiElement.setTitle(aEntry[0])
-                sThumbnail = str(aEntry[2])
-                oGuiElement.setThumbnail(sThumbnail)
-
                 sUrl = URL_MAIN + str(aEntry[1])
-                oOutputParameterHandler = cOutputParameterHandler()
-                oOutputParameterHandler.addParameter('sUrl', sUrl)
-                oGui.addFolder(oGuiElement, oOutputParameterHandler)
+                __showHoster(oGui, aEntry[0], sUrl)
 
             __createNextButtonForVideos(iPage, sOrderBy, oGui)
                 
@@ -118,17 +91,8 @@ def listShow():
 
         if (aResult[0] == True):
             for aEntry in aResult[1]:
-                oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
-                oGuiElement.setFunction('play')
-                oGuiElement.setTitle(aEntry[0])
-                sThumbnail = str(aEntry[2])
-                oGuiElement.setThumbnail(sThumbnail)
-
                 sUrl = URL_MAIN + str(aEntry[1])
-                oOutputParameterHandler = cOutputParameterHandler()
-                oOutputParameterHandler.addParameter('sUrl', sUrl)
-                oGui.addFolder(oGuiElement, oOutputParameterHandler)
+                __showHoster(oGui, aEntry[0], sUrl)
 
     oGui.setEndOfDirectory()
 
@@ -136,7 +100,7 @@ def __createNextButtonForVideos(iPage, sOrderBy, oGui):
     if (iPage == 1):       
         iNextPage = 2  
         oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
+        oGuiElement.setSiteName(SITE_IDENTIFIER)
         oGuiElement.setFunction('listVideos')
         oGuiElement.setTitle('mehr ..')
         oOutputParameterHandler = cOutputParameterHandler()
@@ -165,36 +129,18 @@ def __parseCharts(sUrl):
 
     if (aResult[0] == True):
         for aEntry in aResult[1]:
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setFunction('play')
-
             sInterpretName = cUtil().removeHtmlTags(str(aEntry[2]), '')
-
             sTitle = str(aEntry[0]) + ' (' + str(aEntry[1]) + ') : ' + sInterpretName + ' - ' + str(aEntry[3])
-
-            oOutputParameterHandler = cOutputParameterHandler()
 
             sPattern = '.*?<a href="([^"]+)".*?<img.*?<img.*?src="([^"]+)"'
             sCode = aEntry[4]
             oParser = cParser()
             aResultMeta = oParser.parse(sCode, sPattern)
             if (aResultMeta[0] == True):
-                oGuiElement.setTitle(sTitle)
-
-                sLink = aResultMeta[1][0][0]
-                sThumbnail = aResultMeta[1][0][1]
-
-                oGuiElement.setThumbnail(sThumbnail)
-
+                sLink = aResultMeta[1][0][0]                
+                
                 sUrl = URL_MAIN + str(sLink)
-                oOutputParameterHandler.addParameter('sUrl', sUrl)
-
-            else:
-                sTitle = sTitle + ' (NO VIDEO)'
-                oGuiElement.setTitle(sTitle)
-
-            oGui.addFolder(oGuiElement, oOutputParameterHandler)
+                __showHoster(oGui, sTitle, sUrl)
 
     oGui.setEndOfDirectory()
 
@@ -212,7 +158,7 @@ def showShows():
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('listShow')
 
             sTitle = aEntry[1].replace('Foto', '')
@@ -227,10 +173,7 @@ def showShows():
             
     oGui.setEndOfDirectory()
 
-
-
-def showSearch():
-    logger.info('show keyboard')
+def showSearch():    
     oGui = cGui()
 
     sSearchText = oGui.showKeyBoard()
@@ -252,8 +195,6 @@ def search():
     oGui.setEndOfDirectory()
 
 def __callSearch(sSearchText, iStart):
-    logger.info('search : ' + str(sSearchText) + ' start : ' + str(iStart))
-
     oGui = cGui()
 
     oRequest = cRequestHandler(URL_SEARCH)
@@ -270,17 +211,11 @@ def __callSearch(sSearchText, iStart):
 
     if (aResult[0] == True):
         for aEntry in aResult[1]:
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setFunction('play')
-            oGuiElement.setTitle(aEntry[1])
-            sThumbnail = str(aEntry[2])
-            oGuiElement.setThumbnail(sThumbnail)
+            oHoster = cHosterHandler().getHoster('mtv')
+            oHoster.setDisplayName(aEntry[1])
 
             sUrl = URL_MAIN + str(aEntry[0])
-            oOutputParameterHandler = cOutputParameterHandler()
-            oOutputParameterHandler.addParameter('sUrl', sUrl)
-            oGui.addFolder(oGuiElement, oOutputParameterHandler)
+            cHosterGui().showHoster(oGui, oHoster, sUrl)            
 
         __createNextButtonForSearch(oGui, iStart, sSearchText, sHtmlContent)
             
@@ -293,12 +228,11 @@ def __createNextButtonForSearch(oGui, iCurrentStart, sSearchText, sHtmlContent):
     
     if (aResult[0] == True):
         iCount = aResult[1][0]
-        logger.info(iCount)
-
+        
         iNextStart = __calculateNextPage(iCount, iCurrentStart)
         if (iNextStart > 0):
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('search')
             oGuiElement.setTitle('mehr ..')
             oOutputParameterHandler = cOutputParameterHandler()
@@ -314,44 +248,7 @@ def __calculateNextPage(iCount, iCurrentStart):
     
     return 0
 
-
-def play():
-    oGui = cGui()
-
-    oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('sUrl')):
-        sUrl = oInputParameterHandler.getValue('sUrl')
-        
-        oRequest = cRequestHandler(sUrl)
-        sHtmlContent = oRequest.request()
-       
-        sPattern = 'vid=([^;]+);'
-        oParser = cParser()
-        aResult = oParser.parse(sHtmlContent, sPattern)
-       
-        if (aResult[0] == True):
-            videoId = aResult[1][0]
-            logger.info(videoId)
-            
-            oRequest = cRequestHandler(URL_XML)
-            oRequest.addParameters('vid', videoId)
-            oRequest.addParameters('hiLoPref', 'lo')
-            sHtmlContent = oRequest.request()
-         
-            sPattern = '<src>([^<]+)</src>'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-
-            if (aResult[0] == True):
-                sStreamUrl = aResult[1][0]
-                logger.info(sStreamUrl)
-               
-                oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
-                oGuiElement.setMediaUrl(sStreamUrl)
-                oPlayer = cPlayer()
-                oPlayer.addItemToPlaylist(oGuiElement)
-                oPlayer.startPlayer()
-                return
-                            
-    oGui.setEndOfDirectory()
+def __showHoster(oGui, sTitle, sUrl):
+    oHoster = cHosterHandler().getHoster('mtv')
+    oHoster.setDisplayName(sTitle)    
+    cHosterGui().showHoster(oGui, oHoster, sUrl)

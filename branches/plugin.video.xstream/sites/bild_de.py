@@ -4,12 +4,13 @@ from resources.lib.parser import cParser
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.gui.gui import cGui
-from resources.lib.player import cPlayer
-import logger
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 import time
 import random
 
-SITE_NAME = 'bild_de'
+SITE_IDENTIFIER = 'bild_de'
+SITE_NAME = 'Bild.de'
 
 URL_MAIN = 'http://film.bild.de'
 URL_VIDEOS = 'http://film.bild.de/nav.aspx'
@@ -18,8 +19,6 @@ URL_VIDEO_DETAILS = 'http://film.bild.de:80/movie'
 
 
 def load():    
-    logger.info('load bild.de :)')
-   
     oGui = cGui()
     __createMainMenuItem(oGui, 'Alle Filme', '2147483647')
     __createMainMenuItem(oGui, 'Action / Thriller' , '22')
@@ -33,7 +32,7 @@ def load():
 
 def __createMainMenuItem(oGui, sTitle, iId):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('listVideos')
     oGuiElement.setTitle(sTitle)
     oOutputParameterHandler = cOutputParameterHandler()
@@ -63,23 +62,18 @@ def listVideos():
         
         if (aResult[0] == True):
             for aEntry in aResult[1]:
-                oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
-                oGuiElement.setFunction('playVideo')
-                oGuiElement.setTitle(aEntry[2])
+                oHoster = cHosterHandler().getHoster('bild')
+                oHoster.setDisplayName(aEntry[2])
 
                 sRandom = random.random()              
 	        sMilli = str(time.time()).split('.')[1]
-
                 sUrl = URL_VIDEO_DETAILS + str(sMilli) + str(sRandom) + '.xml?s=xml' + str(aEntry[0])
-                                
-                oOutputParameterHandler = cOutputParameterHandler()
-                oOutputParameterHandler.addParameter('sUrl', sUrl)
-                oGui.addFolder(oGuiElement, oOutputParameterHandler)
+                
+                cHosterGui().showHoster(oGui, oHoster, sUrl)
 
         if (__checkForNextPage(sHtmlContent, iPage) == True):
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('listVideos')            
             oGuiElement.setTitle('mehr ..')
 
@@ -104,38 +98,3 @@ def __checkForNextPage(sHtmlContent, iCurrentPage):
     if (int(iLastPage) > int(iCurrentPage)):
         return True
     return False
-
-def playVideo():
-    oGui = cGui()
-
-    oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('sUrl')):
-        sUrl = oInputParameterHandler.getValue('sUrl')
-       
-        oRequest = cRequestHandler(sUrl)        
-        sHtmlContent = oRequest.request()
-       
-        sPattern = '<enclosure url="([^"]+)"'
-        oParser = cParser()
-        aResult = oParser.parse(sHtmlContent, sPattern)
-       
-        if (aResult[0] == True):
-            sRtmpFile = aResult[1][0]
-
-            aSplitt = sRtmpFile.split('/ondemand/')
-
-            aSplitt2 = aSplitt[1].split('?')
-            sPlayPath = aSplitt2[0]
-            sAuth = aSplitt2[1]
-
-            sStreamUrl = aSplitt[0] + '/ondemand/?' + sAuth + ' playpath=' + sPlayPath
-            
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setMediaUrl(sStreamUrl)
-            oPlayer = cPlayer()
-            oPlayer.addItemToPlaylist(oGuiElement)
-            oPlayer.startPlayer()
-            return
-            
-    oGui.setEndOfDirectory()

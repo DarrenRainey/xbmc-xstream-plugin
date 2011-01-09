@@ -1,12 +1,30 @@
 from resources.lib.handler.requestHandler import cRequestHandler
+from resources.lib.handler.premiumHandler import cPremiumHandler
 from resources.lib.parser import cParser
 from resources.lib.gui.gui import cGui
+from hosters.hoster import iHoster
 import time
 import random
 
-class cHoster:
-    def getName(self):
-        return 'Duckload.com'
+class cHoster(iHoster):
+
+    def __init__(self):
+        self.__sDisplayName = 'Duckload.com'
+
+    def getDisplayName(self):
+        return  self.__sDisplayName
+
+    def setDisplayName(self, sDisplayName):
+        self.__sDisplayName = sDisplayName
+
+    def getPluginIdentifier(self):
+        return 'duckload'
+
+    def isDownloadable(self):
+        return True
+
+    def isJDownloaderable(self):
+        return True
 
     def getPattern(self):
         return ""
@@ -21,14 +39,45 @@ class cHoster:
         return self.__sUrl
 
     def getMediaLink(self):
-        sSecondsForWait = 10
+        oPremiumHandler = cPremiumHandler(self.getPluginIdentifier())
+        if (oPremiumHandler.isPremiumModeAvailable()):
+            sUsername = oPremiumHandler.getUsername()
+            sPassword = oPremiumHandler.getPassword()
+            return self.__getMediaLinkByPremiumUser(sUsername, sPassword);
+
+        return self.__getMediaLinkForGuest();
+
+    def __getMediaLinkByPremiumUser(self, sUsername, sPassword):
+        oRequestHandler = cRequestHandler('http://www.duckload.com/api/public/login&user=' + sUsername + '&pw=' + sPassword + '&fmt=json&source=WEB')
+        sHtmlContent = oRequestHandler.request()
+
+        aHeader = oRequestHandler.getResponseHeader()
+        sReponseCookie = aHeader.getheader("Set-Cookie")
+
+        oRequestHandler = cRequestHandler(self.__sUrl)
+        oRequestHandler.setRequestType(cRequestHandler.REQUEST_TYPE_POST)
+        oRequestHandler.addParameters('stream', '')
+        oRequestHandler.addHeaderEntry('Cookie', sReponseCookie)
+        sHtmlContent = oRequestHandler.request()
         
+        sPattern = '<param name="src" value="([^"]+)"'
+        oParser = cParser()
+        aResult = oParser.parse(sHtmlContent, sPattern)
+       
+        if (aResult[0] == True):
+            return True, aResult[1][0]
+
+        return False, aResult
+
+    def __getMediaLinkForGuest(self):
+        sSecondsForWait = 10
+
         oRequest = cRequestHandler(self.__sUrl)
         sHtmlContent = oRequest.request()
 
         aHeader = oRequest.getResponseHeader()
         sPhpSessionId = self.__getPhpSessionId(aHeader)
-        
+
         sPattern = 'id="number">([^<]+)</span>'
         oParser = cParser()
         aResult = oParser.parse(sHtmlContent, sPattern)
@@ -52,7 +101,7 @@ class cHoster:
 		sCookieValue = sCookieValue + sPhpSessionId +'; '
 		sCookieValue = sCookieValue + '__utmc=' + str(rndY) + "; "
 		sCookieValue = sCookieValue + '__utmb=' + str(rndY) + '.7.10.' +  str(ts5) + "; ADBLOCK=1"
-               
+
                 oRequest = cRequestHandler(self.__sUrl)
                 oRequest.setRequestType(cRequestHandler.REQUEST_TYPE_POST)
                 oRequest.addHeaderEntry('Cookie', sCookieValue)
@@ -63,8 +112,8 @@ class cHoster:
 		sPattern = '<param name="src" value="([^"]+)"'
                 oParser = cParser()
                 aResult = oParser.parse(sHtmlContent, sPattern)
-                
-               
+
+
                 if (aResult[0] == True):
                     return True, aResult[1][0]
 

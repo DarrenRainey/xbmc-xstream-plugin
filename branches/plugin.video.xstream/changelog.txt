@@ -1,3 +1,32 @@
+
+todos for version 0.5:
+- add premiumaccounts (megavideo, duckload)
+- hoster refactoring OK
+- sites refactoring
+- add a simple way, to add new sites OK
+- add a simple way, to add new hosters OK
+- new settingsdialog OK
+- add reconnectscript for routers and add a simple way, to add new routers
+- add new hosters
+- add new sites
+- jdownloader
+- statistik 
+
+new hoster:
+    XvidStage.com
+    FilesUp.com
+    FileBase.to
+    ecostream.tv
+
+new sites:
+    Burning-Series.org
+    KinoKiste.com
+
+aufschreiben, welche hoster in welchem plugin genutzt wird, und wieviele
+
+
+-> alle nochmal testen
+
 ================================================================================
 - Version 0.4.5 - 02.01.2011
 ================================================================================
