@@ -1,19 +1,18 @@
-import logger
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 from resources.lib.gui.gui import cGui
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.handler.inputParameterHandler import cInputParameterHandler
 from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.parser import cParser
-from resources.lib.player import cPlayer
-from resources.lib.util import cUtil
 
-SITE_NAME = 'anime_stream24_com'
+SITE_IDENTIFIER = 'anime_stream24_com'
+SITE_NAME = 'Anime-Stream24.com'
+
 URL_MAIN = 'http://www.anime-stream24.com'
 
 def load():
-    logger.info('load anime-stream24.com :)')
-
     oGui = cGui()
 
     oOutputParameterHandler = cOutputParameterHandler()
@@ -28,7 +27,7 @@ def load():
 
 def __createMenuEntry(oGui, sFunction, sLabel, oOutputParameterHandler = ''):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction(sFunction)
     oGuiElement.setTitle(sLabel)
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
@@ -54,7 +53,7 @@ def showCurrentMovies():
         if (aResult[0] == True):
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('showHosters')
                 oGuiElement.setTitle(str(aEntry[1]))
 
@@ -85,7 +84,7 @@ def showAnimesAlphabetic():
         if (aResult[0] == True):
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('showMovieTitles')
                 oGuiElement.setTitle(str(aEntry[1]))
 
@@ -113,7 +112,7 @@ def showMovieTitles():
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('showHosters')
             oGuiElement.setTitle(str(aEntry[1]))
 
@@ -124,7 +123,7 @@ def showMovieTitles():
     sNextPage = __checkForNextPage(sHtmlContent)
     if (sNextPage != False):       
         oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
+        oGuiElement.setSiteName(SITE_IDENTIFIER)
         oGuiElement.setFunction('showMovieTitles')
         oGuiElement.setTitle('next ..')
 
@@ -142,7 +141,6 @@ def __checkForNextPage(sHtmlContent):
         return aResult[1][0]
 
     return False
-
 
 def showHosters():
     oGui = cGui()
@@ -166,72 +164,33 @@ def showHosters():
         if (aResult[0] == True):
             for aEntry in aResult[1]:
                 sHosterUrl = str(aEntry).replace("'", '').replace('"', '')
-                aHoster = __checkHoster(sHosterUrl)
-
-                sHosterName = aHoster[0]
-                sHosterPluginName = aHoster[1]
-
-                if (sHosterName != False):
-                    oGuiElement = cGuiElement()
-                    oGuiElement.setSiteName(SITE_NAME)
-                    oGuiElement.setFunction('play')
-                    oGuiElement.setTitle(sHosterName)
-
-                    oOutputParameterHandler = cOutputParameterHandler()
-                    oOutputParameterHandler.addParameter('siteUrl', sHosterUrl)
-                    oOutputParameterHandler.addParameter('sHosterFileName', sHosterPluginName)
-
-                    oGui.addFolder(oGuiElement, oOutputParameterHandler)
+                
+                oHoster = __checkHoster(sHosterUrl)               
+                if (oHoster != False):
+                    cHosterGui().showHoster(oGui, oHoster, sHosterUrl)
 
     oGui.setEndOfDirectory()
 
 def __checkHoster(sHosterUrl):    
     if (sHosterUrl.startswith('http://embed.novamov.com/')):
-        return 'novamov', 'novamov'
-
+        return cHosterHandler().getHoster('novamov')
+    
     if (sHosterUrl.startswith('http://embed.divxstage.net/')):
-        return 'divxstage', 'divxstage'
+        return cHosterHandler().getHoster('divxstage')
 
     if (sHosterUrl.startswith('http://www.filestage.to/')):
-        return 'filestage', 'filestage'
+        return cHosterHandler().getHoster('filestage')
 
     if (sHosterUrl.startswith('http://www.vidxden.com/')):
-        return 'vidxden', 'vidxden'
+        return cHosterHandler().getHoster('vidxden')
 
     if (sHosterUrl.startswith('http://www.vidbux.com/')):
-        return 'vidbux', 'vidbux'
+        return cHosterHandler().getHoster('vidbux')
 
     if (sHosterUrl.startswith('http://www.megavideo.com/')):
-        return 'megavideo', 'megavideo'
+        return cHosterHandler().getHoster('megavideo')
 
     if (sHosterUrl.startswith('http://www.dankfile.com/')):
-        return 'dankfile', 'dankfile'
+        return cHosterHandler().getHoster('dankfile')
 
-    return False, False
-
-def play():
-    oGui = cGui()
-    oInputParameterHandler = cInputParameterHandler()
-    sUrl = oInputParameterHandler.getValue('siteUrl')
-    sHosterFileName = oInputParameterHandler.getValue('sHosterFileName')
-
-    #try:
-    exec "from " + sHosterFileName + " import cHoster"
-    oHoster = cHoster()
-    oHoster.setUrl(sUrl)
-    aLink = oHoster.getMediaLink()
-    if (aLink[0] == True):
-        oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
-        oGuiElement.setMediaUrl(aLink[1])
-
-        oPlayer = cPlayer()
-        oPlayer.addItemToPlaylist(oGuiElement)
-        oPlayer.startPlayer()
-        return
-
-    #except:
-    #    logger.fatal('could not load plugin: ' + sHosterFileName)
-
-    oGui.setEndOfDirectory()
-    
+    return False

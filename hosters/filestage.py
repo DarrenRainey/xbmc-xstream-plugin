@@ -1,12 +1,29 @@
 from resources.lib.handler.hosterHandler import cHosterHandler
 from resources.lib.util import cUtil
+from hosters.hoster import iHoster
 
-class cHoster:
-    def getName(self):
-        return 'Filestage.to'
+class cHoster(iHoster):
+
+    def __init__(self):
+        self.__sDisplayName = 'FileStage.to'
+
+    def getDisplayName(self):
+        return  self.__sDisplayName
+
+    def setDisplayName(self, sDisplayName):
+        self.__sDisplayName = sDisplayName
+
+    def getPluginIdentifier(self):
+        return 'filestage'
+
+    def isDownloadable(self):
+        return True
+
+    def isJDownloaderable(self):
+        return True
 
     def getPattern(self):
-        return 's1.addVariable\("file","([^"]+)"'
+        return 's1.addVariable\("file".*?"([^"]+)"'
 
     def setUrl(self, sUrl):
         self.__sUrl = sUrl
@@ -18,8 +35,12 @@ class cHoster:
         return self.__sUrl
 
     def getMediaLink(self):
+        return self.__getMediaLinkForGuest()
+
+    def __getMediaLinkForGuest(self):
         oHosterHandler = cHosterHandler()
-        aResult = oHosterHandler.getUrl(self)
+        aResult = oHosterHandler.getUrl(self)        
         if (aResult[0] == True):
             return True, cUtil().urlDecode(aResult[1])
-        return False
+
+        return False, ''

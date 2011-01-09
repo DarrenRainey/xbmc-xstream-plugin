@@ -1,5 +1,7 @@
 from resources.lib.config import cConfig
+import logger
 import sys
+import os
 
 class cPluginHandler:
 
@@ -15,84 +17,56 @@ class cPluginHandler:
         except:
                 return ''
 
+    def __getFileNamesFromFolder(self, sFolder):
+        aNameList = []
+        items = os.listdir(sFolder)
+        for sItemName in items:
+            sFilePath = os.path.join(sFolder, sItemName)
+            if (os.path.isdir(sFilePath) == False):
+                if (str(sFilePath.lower()).endswith('py')):
+                    sItemName = sItemName.replace('.py', '')
+                    aNameList.append(sItemName)
+        return aNameList
+
+    def __importPlugin(self, sName):
+        try:
+            exec "import " + sName
+            exec "sSiteName = " + sName + ".SITE_NAME"
+            sPluginSettingsName = 'plugin_' + sName
+            return sSiteName, sPluginSettingsName
+        except Exception, e:
+            logger.error("can't import plugin: " + str(sName))            
+            return False, False
+
     def getAvailablePlugins(self):
         oConfig = cConfig()
+
+        sFolder = os.path.join("special://home/", 'addons', 'plugin.video.xstream', 'sites')
+        aFileNames = self.__getFileNamesFromFolder(sFolder)
+
         aPlugins = []
+        for sFileName in aFileNames:
+            logger.info('load plugin: '+ str(sFileName))
 
-        bPlugin = oConfig.getSetting('plugin_kino_to')        
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30201', 'kino_to'))
+            # wir versuchen das plugin zu importieren
+            aPlugin = self.__importPlugin(sFileName)
+            if (aPlugin[0] != False):
+                sSiteName = aPlugin[0]
+                sPluginSettingsName = aPlugin[1]
 
-        bPlugin = oConfig.getSetting('plugin_southpark_de')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30202', 'southpark_de'))
-
-        bPlugin = oConfig.getSetting('plugin_myp2p_eu')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30203', 'myp2p_eu'))
-
-        bPlugin = oConfig.getSetting('plugin_gstream_in')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30204', 'gstream_in'))
-
-        bPlugin = oConfig.getSetting('plugin_nba_de')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30205', 'nba_de'))
-
-        bPlugin = oConfig.getSetting('plugin_bundesliga_de')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30206', 'bundesliga_de'))
-
-        bPlugin = oConfig.getSetting('plugin_mtv_de')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30207', 'mtv_de'))
-
-        bPlugin = oConfig.getSetting('plugin_kino_de')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30208', 'kino_de'))
-
-        bPlugin = oConfig.getSetting('plugin_bild_de')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30209', 'bild_de'))
-
-        bPlugin = oConfig.getSetting('plugin_moviemaze_de')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30210', 'moviemaze_de'))
-
-        bPlugin = oConfig.getSetting('plugin_shoutcast_com')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30211', 'shoutcast_com'))
-
-        bPlugin = oConfig.getSetting('plugin_movie2k_com')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30212', 'movie2k_com'))
-
-        bPlugin = oConfig.getSetting('plugin_simpsons_to')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30213', 'simpsons_to'))
-
-        bPlugin = oConfig.getSetting('plugin_iload_to')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30214', 'iload_to'))
-
-        bPlugin = oConfig.getSetting('plugin_br_online_de')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30215', 'br_online_de'))
-
-        bPlugin = oConfig.getSetting('plugin_anime_stream24_com')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30216', 'anime_stream24_com'))
-
-        bPlugin = oConfig.getSetting('plugin_radiotime_com')
-        if (bPlugin == 'true'):
-            aPlugins.append(self.__createAvailablePluginsItem('30217', 'radiotime_com'))
+                # existieren zu diesem plugin die an/aus settings
+                bPlugin = oConfig.getSetting(sPluginSettingsName)
+                if (bPlugin != ''):
+                    # settings gefunden
+                    if (bPlugin == 'true'):
+                        aPlugins.append(self.__createAvailablePluginsItem(sSiteName, sFileName))
+                else:
+                   # settings nicht gefunden, also schalten wir es trotzdem sichtbar
+                   aPlugins.append(self.__createAvailablePluginsItem(sSiteName, sFileName))
 
         return aPlugins
 
-    def __createAvailablePluginsItem(self, iPluginStringId, sPluginIdentifier):
-        oConfig = cConfig()
-        sPluginName = oConfig.getLocalizedString(int(iPluginStringId))
-
+    def __createAvailablePluginsItem(self, sPluginName, sPluginIdentifier):
         aPluginEntry = []
         aPluginEntry.append(sPluginName)
         aPluginEntry.append(sPluginIdentifier)

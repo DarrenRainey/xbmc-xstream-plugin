@@ -4,10 +4,11 @@ from resources.lib.parser import cParser
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.gui.gui import cGui
-from resources.lib.player import cPlayer
-import logger
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 
-SITE_NAME = 'shoutcast_com'
+SITE_IDENTIFIER = 'shoutcast_com'
+SITE_NAME = 'ShoutCast.com'
 
 URL_MAIN = 'http://www.shoutcast.com'
 URL_GENRE_CHILDS = 'http://www.shoutcast.com/genre.jsp'
@@ -17,17 +18,15 @@ URL_SEARCH = 'http://www.shoutcast.com/search-ajax/'
 COUNT_OF_ENTRIES = 10
 
 def load():
-    logger.info('load shoutcast.com :)')
-
     oGui = cGui()
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('loadGenre')
     oGuiElement.setTitle('Genre')
     oGui.addFolder(oGuiElement)
 
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('loadSearch')
     oGuiElement.setTitle('Suche')
     oGui.addFolder(oGuiElement)
@@ -47,7 +46,7 @@ def loadGenre():
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('showGenreChilds')
             oGuiElement.setTitle(aEntry[2])
           
@@ -75,7 +74,7 @@ def showGenreChilds():
 
          # maingenre
         oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
+        oGuiElement.setSiteName(SITE_IDENTIFIER)
         oGuiElement.setFunction('showGenreContent')
         oGuiElement.setTitle(sGenre)
         oOutputParameterHandler = cOutputParameterHandler()
@@ -90,7 +89,7 @@ def showGenreChilds():
         if (aResult[0] == True):
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('showGenreContent')
                 oGuiElement.setTitle(aEntry[1])
                 oOutputParameterHandler = cOutputParameterHandler()
@@ -150,21 +149,16 @@ def __parseContent(oGui, sHtmlContent, sValue, iStartIndex):
 
     if (aResult[0] == True):
         for aEntry in aResult[1]:
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setFunction('play')
-
+            oHoster = cHosterHandler().getHoster('shoutcast')
             sTitle = str(aEntry[3]) + ' - ' + str(aEntry[2]) + ' - ' + str(aEntry[0])
-            oGuiElement.setTitle(sTitle)
-            oOutputParameterHandler = cOutputParameterHandler()
-            oOutputParameterHandler.addParameter('sUrl', aEntry[1])
-            oGui.addFolder(oGuiElement, oOutputParameterHandler)
+            oHoster.setDisplayName(sTitle)
+            cHosterGui().showHoster(oGui, oHoster, str(aEntry[1]))
 
     if (__checkForNextPage(sHtmlContent)):
         iNextPage = int(iStartIndex) + COUNT_OF_ENTRIES
 
         oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
+        oGuiElement.setSiteName(SITE_IDENTIFIER)
         oGuiElement.setFunction('showGenreContent')
         oGuiElement.setTitle('mehr ..')
         oOutputParameterHandler = cOutputParameterHandler()
@@ -180,24 +174,6 @@ def __checkForNextPage(sHtmlContent):
     if (aResult[0] == True):
         return True
     return False
-
-def play():
-    oGui = cGui()
-
-    oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('sUrl')):
-        sUrl = oInputParameterHandler.getValue('sUrl')
-
-        oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
-        oGuiElement.setMediaUrl(sUrl)
-
-        oPlayer = cPlayer()
-        oPlayer.addItemToPlaylist(oGuiElement)
-        oPlayer.startPlayer()
-        return
-        
-    oGui.setEndOfDirectory()
 
 def loadSearch():
     oGui = cGui()

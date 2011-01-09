@@ -1,8 +1,26 @@
-from resources.lib.handler.hosterHandler import cHosterHandler
+from resources.lib.parser import cParser
+from resources.lib.handler.requestHandler import cRequestHandler
+from hosters.hoster import iHoster
 
-class cHoster:
-    def getName(self):
-        return 'Moveshare.net'
+class cHoster(iHoster):
+
+    def __init__(self):
+        self.__sDisplayName = 'MovShare.net'
+
+    def getDisplayName(self):
+        return  self.__sDisplayName
+
+    def setDisplayName(self, sDisplayName):
+        self.__sDisplayName = sDisplayName
+
+    def getPluginIdentifier(self):
+        return 'movshare'
+
+    def isDownloadable(self):
+        return True
+
+    def isJDownloaderable(self):
+        return True
 
     def getPattern(self):
         return '<param name="src" value="(.*?)"';
@@ -17,7 +35,31 @@ class cHoster:
         return self.__sUrl
 
     def getMediaLink(self):
-        oHosterHandler = cHosterHandler()
-        return oHosterHandler.getUrl(self)
+        return self.__getMediaLinkForGuest()
+
+    def __getMediaLinkForGuest(self):
+        oRequest = cRequestHandler(self.__sUrl)
+        sHtmlContent = oRequest.request()
+        
+        sPattern = '<form id="watch" name="watch" method="post" action=""><input type="hidden" name="wm" value="([^"]+)">'
+        oParser = cParser()
+        aResult = oParser.parse(sHtmlContent, sPattern)
+        
+        if (aResult[0] == True):
+            sUid = aResult[1][0]
+
+            oRequest = cRequestHandler(self.__sUrl)
+            oRequest.setRequestType(cRequestHandler.REQUEST_TYPE_POST)
+            oRequest.addParameters('submit.x','149')
+            oRequest.addParameters('submit.y', '19')
+            oRequest.addParameters('wm', sUid)
+            sHtmlContent = oRequest.request()
+
+            aMediaLink = cParser().parse(sHtmlContent, self.getPattern())
+            
+            if (aMediaLink[0] == True):
+                return True, str(aMediaLink[1][0])
+
+        return False, False
 
 

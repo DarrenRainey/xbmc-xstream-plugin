@@ -6,12 +6,13 @@ from resources.lib.handler.inputParameterHandler import cInputParameterHandler
 from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.parser import cParser
-from resources.lib.player import cPlayer
 from resources.lib.util import cUtil
-from resources.lib.gui.contextElement import cContextElement
-from resources.lib.download import cDownload
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 
-SITE_NAME = 'kino_to'
+SITE_IDENTIFIER = 'kino_to'
+SITE_NAME = 'Kino.to'
+
 URL_MAIN = 'http://kino.to'
 URL_CINEMA_PAGE = 'http://kino.to/Cinemas.html'
 URL_GENRE_PAGE = 'http://kino.to/Genre.html'
@@ -111,8 +112,6 @@ def load():
     oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
     __createMenuEntry(oGui, 'displayFavItems', 'Neuste Dokumentationen', oOutputParameterHandler)
 
-
-
     oOutputParameterHandler = cOutputParameterHandler()
     oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
     __createMenuEntry(oGui, 'displaySearchSite', 'Suche', oOutputParameterHandler)
@@ -135,7 +134,7 @@ def __createTitleWithLanguage(sLanguage, sTitle):
 
 def __createMenuEntry(oGui, sFunction, sLabel, oOutputParameterHandler = ''):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction(sFunction)
     oGuiElement.setTitle(sLabel)
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
@@ -225,7 +224,7 @@ def __diplayItems(sHtmlContent):
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('parseMovieEntrySite')
             oGuiElement.setTitle(__createTitleWithLanguage(aEntry[0], aEntry[2]))
 
@@ -276,7 +275,7 @@ def displayNews():
     if (aResult[0] == True):
         for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('parseNews')
                 oGuiElement.setTitle(__createTitleWithLanguage('', aEntry[0]) +  ' (' + str(aEntry[1]) + ')')
 
@@ -316,7 +315,7 @@ def parseNews():
         if (aResult[0] == True):
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('parseMovieEntrySite')
                 oGuiElement.setTitle(__createTitleWithLanguage(aEntry[0], aEntry[2]))
 
@@ -362,7 +361,7 @@ def displayCharacterSite():
         if (aResult[0] == True):
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('ajaxCall')
                 oGuiElement.setTitle(aEntry[0])
 
@@ -396,7 +395,7 @@ def displayGenreSite():
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('showCharacters')
             oGuiElement.setTitle(aEntry[1])
 
@@ -431,7 +430,7 @@ def displayCinemaSite():
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('parseMovieEntrySite')
             oGuiElement.setTitle(aEntry[1])
             oGuiElement.setThumbnail(aEntry[2])
@@ -467,7 +466,7 @@ def parseMovieEntrySite():
                 __createInfoItem(oGui, sHtmlContent)
                 for aSeriesItem in aSeriesItems:
                     oGuiElement = cGuiElement()
-                    oGuiElement.setSiteName(SITE_NAME)
+                    oGuiElement.setSiteName(SITE_IDENTIFIER)
                     oGuiElement.setTitle(aSeriesItem[0])
                     oGuiElement.setFunction('displayHoster')
 
@@ -486,10 +485,10 @@ def __createInfoItem(oGui, sHtmlContent):
     sDescription = __getDescription(sHtmlContent)
 
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
-    oGuiElement.setTitle('info')
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
+    oGuiElement.setTitle('info (press Info Button)')
     oGuiElement.setThumbnail(sThumbnail)
-    oGuiElement.setFunction('showInfo')
+    oGuiElement.setFunction('dummyFolder')
     oGuiElement.setDescription(sDescription)
 
     oOutputParameterHandler = cOutputParameterHandler()
@@ -497,29 +496,14 @@ def __createInfoItem(oGui, sHtmlContent):
     oOutputParameterHandler.addParameter('sDescription', sDescription)
 
     # [('Jeff Tremaine', 'United States', '~ 94 min.', 'Action', '509.648')]
-    aDetails = __getDetails(sHtmlContent)
-    oOutputParameterHandler.addParameter('aDetails', aDetails)
+    #aDetails = __getDetails(sHtmlContent)
+    #oOutputParameterHandler.addParameter('aDetails', aDetails)
 
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
-def showInfo():
-    oGui = cGui()
-
-    oInputParameterHandler = cInputParameterHandler()
-    aDetails = {}
-    aDetails = eval(oInputParameterHandler.getValue('aDetails'))
-
-    oGuiElement = cGuiElement()
-    oGuiElement.setTitle('info')
-    oGuiElement.setThumbnail(oInputParameterHandler.getValue('sThumbnail'))
-    oGuiElement.setDescription(cUtil().removeHtmlTags(oInputParameterHandler.getValue('sDescription'), ''))
-
-    for sKey, sValue in aDetails.iteritems():
-        oGuiElement.addItemValues(str(sKey), sValue)
-
-    oGui.showInfo(oGuiElement)
-    return
-
+def dummyFolder():
+    oGui = cGui()    
+    oGui.setEndOfDirectory()
 
 def displayHoster(sHtmlContent = ''):
     oGui = cGui()
@@ -545,7 +529,7 @@ def displayHoster(sHtmlContent = ''):
     for aHoster in aHosters:
         if (len(aHoster) > 0):
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setTitle(aHoster[0])
             oGuiElement.setFunction('parseHosterSnippet')
 
@@ -618,54 +602,6 @@ def parseHosterSnippet():
             sPattern = 'value=\\\\"http:\\\\/\\\\/www.megavideo.com\\\\/v\\\\/([^"]+)\\\\'
             __parseHosterDefault(sHosterUrlSite, sHosterName, sHosterFileName, sPattern, sSecurityValue)
 
-
-def playMovieFromHoster():
-    oGui = cGui()
-
-    oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('sHosterFileName') and oInputParameterHandler.exist('linkToHosterMediaFile')):
-        sHosterFileName = oInputParameterHandler.getValue('sHosterFileName')
-        linkToHosterMediaFile = oInputParameterHandler.getValue('linkToHosterMediaFile')
-
-        #try:
-        exec "from " + sHosterFileName + " import cHoster"
-        oHoster = cHoster()
-        oHoster.setUrl(linkToHosterMediaFile)
-        aLink = oHoster.getMediaLink()
-        if (aLink[0] == True):
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setMediaUrl(aLink[1])
-
-            oPlayer = cPlayer()
-            oPlayer.addItemToPlaylist(oGuiElement)
-            oPlayer.startPlayer()
-            return
-
-        #except:
-        #    logger.fatal('could not load plugin: ' + sHosterFileName)
-
-    oGui.setEndOfDirectory()
-
-def downloadStreamFile():
-
-    oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('sHosterFileName') and oInputParameterHandler.exist('linkToHosterMediaFile')):
-        sHosterFileName = oInputParameterHandler.getValue('sHosterFileName')
-        linkToHosterMediaFile = oInputParameterHandler.getValue('linkToHosterMediaFile')
-
-         #try:
-        exec "from " + sHosterFileName + " import cHoster"
-        oHoster = cHoster()
-        oHoster.setUrl(linkToHosterMediaFile)
-        aLink = oHoster.getMediaLink()
-        if (aLink[0] == True):
-            cDownload().download(aLink[1], 'filename')
-            return
-
-        #except:
-        #    logger.fatal('could not load plugin: ' + sHosterFileName)
-
 def ajaxCall():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
@@ -703,7 +639,7 @@ def ajaxCall():
 
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('parseMovieEntrySite')
                 oGuiElement.setTitle(__createTitleWithLanguage(aEntry[0], aEntry[2]))
 
@@ -726,7 +662,7 @@ def ajaxCall():
                 iCurrentDisplayStart = __createDisplayStart(iNextPage)
                 if (iCurrentDisplayStart < iTotalCount):
                     oGuiElement = cGuiElement()
-                    oGuiElement.setSiteName(SITE_NAME)
+                    oGuiElement.setSiteName(SITE_IDENTIFIER)
                     oGuiElement.setFunction('ajaxCall')
                     oGuiElement.setTitle('next ..')
 
@@ -786,7 +722,7 @@ def showCharacters():
 
 def __createCharacters(oGui, sCharacter, sMediaType, iMediaTypePageId, sSecurityValue):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('ajaxCall')
     oGuiElement.setTitle(sCharacter)
 
@@ -853,26 +789,8 @@ def __parseHosterDefault(sUrl, sHosterName, sHosterFileName, sPattern, sSecurity
             sPartUrl = sPartUrl.replace('\\/', '/')
             iCounter = iCounter + 1
 
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setTitle(sHosterName)
-            oGuiElement.setFunction('playMovieFromHoster')
-
-            oOutputParameterHandler = cOutputParameterHandler()
-            oOutputParameterHandler.addParameter('sHosterFileName', sHosterFileName)
-            oOutputParameterHandler.addParameter('linkToHosterMediaFile', sPartUrl)
-
-            # download context menu
-            oContextElement = cContextElement()
-            oContextElement.setTitle('Download')
-            oContextElement.setFile(SITE_NAME)
-            oContextElement.setFunction('downloadStreamFile')
-            oOutputParameterHandlerDownload = cOutputParameterHandler()
-            oOutputParameterHandlerDownload.addParameter('sHosterFileName', sHosterFileName)
-            oOutputParameterHandlerDownload.addParameter('linkToHosterMediaFile', sPartUrl)
-            oContextElement.setOutputParameterHandler(oOutputParameterHandlerDownload)
-            oGuiElement.addContextItem(oContextElement)
-            oGui.addFolder(oGuiElement, oOutputParameterHandler)
+            oHoster = cHosterHandler().getHoster(sHosterFileName)
+            cHosterGui().showHoster(oGui, oHoster, sPartUrl)            
 
     oGui.setEndOfDirectory()
 

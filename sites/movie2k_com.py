@@ -1,15 +1,17 @@
+from resources.lib.util import cUtil
+from resources.lib.handler.hosterHandler import cHosterHandler
 from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
 from resources.lib.handler.inputParameterHandler import cInputParameterHandler
 from resources.lib.parser import cParser
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.gui.gui import cGui
-from resources.lib.player import cPlayer
-from resources.lib.gui.contextElement import cContextElement
-from resources.lib.download import cDownload
-import logger
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 
-SITE_NAME = 'movie2k_com'
+
+SITE_IDENTIFIER = 'movie2k_com'
+SITE_NAME = 'Movie2k.com'
 
 URL_MAIN = 'http://www.movie2k.com/'
 URL_TOP_MOVIES = 'http://www.movie2k.com/movies-top.html'
@@ -24,8 +26,6 @@ URL_SERIES_GENRE = 'http://www.movie2k.com/genres-tvshows.html'
 URL_SEARCH = 'http://www.movie2k.com/movies.php?list=searchnew534'
 
 def load():
-    logger.info('load movie2k.com :)')
-
     oGui = cGui()
     __createMainMenuItem(oGui, 'Filme', '', 'showMovieMenu')
     __createMainMenuItem(oGui, 'Serien', '', 'showSeriesMenu')
@@ -80,7 +80,7 @@ def showCharcacters():
 
 def __createCharacters(oGui, sCharacter):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('parseMovieSimpleList')
     oGuiElement.setTitle(sCharacter)
 
@@ -102,8 +102,7 @@ def showAllSeries():
         sHtmlContent = oRequest.request()
         __parseMovieSimpleList(sHtmlContent, 1)
 
-def showSearch():
-    logger.info('show keyboard')
+def showSearch():    
     oGui = cGui()
 
     sSearchText = oGui.showKeyBoard()
@@ -151,7 +150,7 @@ def showGenre():
         if (aResult[0] == True):
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('parseMovieSimpleList')
 
                 sTitle = aEntry[1] + ' (' + aEntry[2] + ')'
@@ -190,7 +189,7 @@ def __parseMovieSimpleList(sHtmlContent, iPage):
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('showHoster')
 
             sTitle = aEntry[1].strip().replace('\t', '') +  __getLanmguage(aEntry[2])
@@ -203,7 +202,7 @@ def __parseMovieSimpleList(sHtmlContent, iPage):
     sNextUrl = __checkForNextPage(sHtmlContent, iPage)    
     if (sNextUrl != False):
         oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
+        oGuiElement.setSiteName(SITE_IDENTIFIER)
         oGuiElement.setFunction('parseMovieSimpleList')
         oGuiElement.setTitle('next ..')
 
@@ -233,7 +232,7 @@ def showMoviesAndSeries():
         if (aResult[0] == True):
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('showHoster')
 
                 sThumbnail = URL_MAIN + aEntry[1]
@@ -248,6 +247,24 @@ def showMoviesAndSeries():
 
         oGui.setEndOfDirectory()
 
+def __createInfo(oGui, sHtmlContent):
+    sPattern = '<img src="thumbs/([^"]+)".*?<div class="beschreibung">(.*?)<'
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+    if (aResult[0] == True):
+        for aEntry in aResult[1]:
+            oGuiElement = cGuiElement()
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
+            oGuiElement.setTitle('info (press Info Button)')
+            oGuiElement.setThumbnail(URL_MAIN + 'thumbs/' + str(aEntry[0]))
+            oGuiElement.setFunction('dummyFolder')
+            oGuiElement.setDescription(cUtil().removeHtmlTags(str(aEntry[1])))
+            oGui.addFolder(oGuiElement)
+
+def dummyFolder():
+    oGui = cGui()
+    oGui.setEndOfDirectory()
+
 def showHoster():
     oGui = cGui()
 
@@ -257,6 +274,8 @@ def showHoster():
         
         oRequest = cRequestHandler(sUrl)
         sHtmlContent = oRequest.request()
+
+        __createInfo(oGui, sHtmlContent)
         
         sPattern = '<tr id="tablemoviesindex2">.*?<a href="([^"]+)">([^<]+)<.*?width="16">(.*?)</a>.*?alt="([^"]+)"'
         #sPattern = '<tr id="tablemoviesindex2">.*?<a href="([^"]+)">.*?width="16">(.*?)</a>.*?alt="([^"]+)"'
@@ -270,25 +289,13 @@ def showHoster():
                 if (__checkHoster(sHoster) == True):
 
                     oGuiElement = cGuiElement()
-                    oGuiElement.setSiteName(SITE_NAME)
-                    oGuiElement.setFunction('play')
+                    oGuiElement.setSiteName(SITE_IDENTIFIER)
+                    oGuiElement.setFunction('parseHoster')
 
                     sTitle = aEntry[1] + ' - ' + aEntry[2] + ' - ' + aEntry[3]
                     oGuiElement.setTitle(sTitle)
 
                     sUrl = URL_MAIN + aEntry[0]
-
-                    oContextElement = cContextElement()
-                    oContextElement.setTitle('Download')
-                    oContextElement.setFile(SITE_NAME)
-                    oContextElement.setFunction('play')
-                    oOutputParameterHandler = cOutputParameterHandler()
-                    oOutputParameterHandler.addParameter('sUrl', sUrl)
-                    oOutputParameterHandler.addParameter('sTitle', sTitle)
-                    oOutputParameterHandler.addParameter('bDownload', 'True')
-                    oOutputParameterHandler.addParameter('sHoster', sHoster)
-                    oContextElement.setOutputParameterHandler(oOutputParameterHandler)
-                    oGuiElement.addContextItem(oContextElement)
                     
                     oOutputParameterHandler = cOutputParameterHandler()
                     oOutputParameterHandler.addParameter('sUrl', sUrl)
@@ -345,76 +352,96 @@ def __checkHoster(sHoster):
     if (sHoster == 'CheckThisV'):
         return True
 
+    if (sHoster == 'Xvidstage'):
+        return True
+
+    if (sHoster == 'DivX Hoste'):
+        return True
+
     return False
 
-
-def play():
+def parseHoster():
     oGui = cGui()
 
     oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('sUrl') and oInputParameterHandler.exist('sHoster')):
         sUrl = oInputParameterHandler.getValue('sUrl')
-        sHoster = oInputParameterHandler.getValue('sHoster')
-        sTitle = oInputParameterHandler.getValue('sTitle')
-
-        bDownload = False
-        if (oInputParameterHandler.exist('bDownload')):
-            bDownload = True
         
         oRequest = cRequestHandler(sUrl)
         sHtmlContent = oRequest.request()
 
-        # mystream.to
-        if (sHoster == 'Mystream'):            
-            sPattern = '<a href="http://www.mystream.to/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.mystream.to/' + aResult[1][0]
-                __play('mystream', sStreamUrl, sTitle, bDownload)
-                return
+        bFoundHoster = __getHosterFile(oGui, 'mystream', 'http://www.mystream.to/', '<a href="http://www.mystream.to/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
 
-        # loaded.it
-        if (sHoster == 'loaded.it'):
-            sPattern = '<a href="http://loaded.it/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = 'http://loaded.it/' + aResult[1][0]
-                __play('loadedit', sStreamUrl, sTitle, bDownload)
-                return
+        bFoundHoster = __getHosterFile(oGui, 'loadedit', 'http://loaded.it/', '<a href="http://loaded.it/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
 
-        # novamov.com
-        if (sHoster == 'Novamov'):
-            sPattern = "src='http://www.novamov.com/([^']+)'"
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.novamov.com/' + aResult[1][0]
-                __play('novamov', sStreamUrl, sTitle, bDownload)
-                return
+        bFoundHoster = __getHosterFile(oGui, 'novamov', 'http://www.novamov.com/', "src='http://www.novamov.com/([^']+)'", sHtmlContent)
+        if (bFoundHoster == True):
+            return
 
-        # Stream2k.com
-        if (sHoster == 'Stream2k'):
-            sPattern = '<param name="flashvars" value="config=.*?stream2k.com/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.stream2k.com/' + aResult[1][0]
-                __play('stream2k', sStreamUrl, sTitle, bDownload)
-                return
-            
-        # Videoweed.com
-        if (sHoster == 'VideoWeed'):
-            sPattern = 'src="http://www.videoweed.com/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.videoweed.com/' + aResult[1][0]
-                __play('videoweed', sStreamUrl, sTitle, bDownload)
-                return
-            
-        # Uploadc.com MUSS >NOCH
+        bFoundHoster = __getHosterFile(oGui, 'stream2k', 'http://www.stream2k.com/', '<param name="flashvars" value="config=.*?stream2k.com/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        bFoundHoster = __getHosterFile(oGui, 'videoweed', 'http://www.videoweed.com/', 'src="http://www.videoweed.com/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        bFoundHoster = __getHosterFile(oGui, 'streamesel', 'http://www.streamesel.com/', '<a href="http://www.streamesel.com/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        bFoundHoster = __getHosterFile(oGui, 'megavideo', False, 'value="http://www.megavideo.com/v/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        bFoundHoster = __getHosterFile(oGui, 'duckload', 'http://www.duckload.com/', '<a href="http://duckload.com/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        bFoundHoster = __getHosterFile(oGui, 'duckload', 'http://www.duckload.com/', '<a href="http://www.duckload.com/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        bFoundHoster = __getHosterFile(oGui, 'movshare', 'http://www.movshare.net/', 'src="http://www.movshare.net/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        bFoundHoster = __getHosterFile(oGui, 'movshare', 'http://www.movshare.net/', 'src="http://movshare.net/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        bFoundHoster = __getHosterFile(oGui, 'filestage', 'http://www.filestage.to/', '<a href="http://www.filestage.to/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        bFoundHoster = __getHosterFile(oGui, 'tubeload', 'http://www.tubeload.to/', '<a href="http://www.tubeload.to/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        bFoundHoster = __getHosterFile(oGui, 'screen4u', 'http://www.screen4u.net/', '<a href="http://www.screen4u.net/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        bFoundHoster = __getHosterFile(oGui, 'checkthisvid', 'http://www.checkthisvid.com/', '<a href="http://www.checkthisvid.com/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+             
+        bFoundHoster = __getHosterFile(oGui, 'xvidstage', 'http://xvidstage.com/', '<a href="http://xvidstage.com/([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        bFoundHoster = __getHosterFile(oGui, 'filezup', 'http://www.filezup.com', '<a href="http://www.filezup.com([^"]+)"', sHtmlContent)
+        if (bFoundHoster == True):
+            return
+
+        
+
+        '''
+         Uploadc.com MUSS >NOCH
         if (sHoster == 'UploadC'):
             sPattern = '<a href="http://uploadc.com/([^"]+)"'
             oParser = cParser()
@@ -432,124 +459,24 @@ def play():
             if (aResult[0] == True):
                 sStreamUrl = 'http://loombo.com/' + aResult[1][0]
                 __play('loombo', sStreamUrl, sTitle, bDownload)
-                return
+                return'''
 
-        # streamesel.com
-        if (sHoster == 'Streamesel'):
-            sPattern = '<a href="http://www.streamesel.com/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.streamesel.com/' + aResult[1][0]
-                __play('streamesel', sStreamUrl, sTitle, bDownload)
-                return
-            
-        
-        # MegaVideo.com
-        if (sHoster == 'MegaVideo'):           
-            sPattern = 'value="http://www.megavideo.com/v/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = aResult[1][0]
-                __play('megavideo', sStreamUrl,sTitle, bDownload)
-                return
-        
-         # Duckload.com
-        if (sHoster == 'Duckload'):
-            sPattern = '<a href="http://duckload.com/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)            
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.duckload.com/' + aResult[1][0]
-                __play('duckload', sStreamUrl,sTitle, bDownload)
-                return
-
-            sPattern = '<a href="http://www.duckload.com/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)           
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.duckload.com/' + aResult[1][0]
-                __play('duckload', sStreamUrl,sTitle, bDownload)
-                return
-
-        if (sHoster == 'Movshare'):          
-            sPattern = 'src="http://www.movshare.net/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.movshare.net/' + aResult[1][0]
-                __play('movshare', sStreamUrl,sTitle, bDownload)
-                return            
-        
-            sPattern = "src='http://movshare.net/([^']+)'"
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.movshare.net/' + aResult[1][0]
-                __play('movshare', sStreamUrl,sTitle, bDownload)
-                return
-
-        if (sHoster == 'FileStage'):
-            sPattern = '<a href="http://www.filestage.to/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.filestage.to/' + aResult[1][0]
-                __play('filestage', sStreamUrl,sTitle, bDownload)
-                return
-
-        if (sHoster == 'Tubeload'):
-            sPattern = '<a href="http://www.tubeload.to/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.tubeload.to/' + aResult[1][0]
-                __play('tubeload', sStreamUrl,sTitle, bDownload)
-                return
-
-        if (sHoster == 'Screen4u'):
-            sPattern = '<a href="http://www.screen4u.net/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.screen4u.net/' + aResult[1][0]
-                __play('screen4u', sStreamUrl,sTitle, bDownload)
-                return
-
-        if (sHoster == 'CheckThisV'):
-            sPattern = '<a href="http://www.checkthisvid.com/([^"]+)"'
-            oParser = cParser()
-            aResult = oParser.parse(sHtmlContent, sPattern)
-            if (aResult[0] == True):
-                sStreamUrl = 'http://www.checkthisvid.com/' + aResult[1][0]
-                __play('checkthisvid', sStreamUrl,sTitle, bDownload)
-                return
-
-
-def __play(sHosterFileName, linkToHosterMediaFile, sTitle, bDownload):
-    oGui = cGui()
-
-    exec "from " + sHosterFileName + " import cHoster"
-    print 'load hoster ' + sHosterFileName
-    oHoster = cHoster()
-    oHoster.setUrl(linkToHosterMediaFile)
-    aLink = oHoster.getMediaLink()
+def __getHosterFile(oGui, sHoster, sUrl, sPattern, sHtmlContent ):
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
     
-    if (aLink[0] == True):
-        if (bDownload == True):
-            cDownload().download(aLink[1], sTitle)
+    if (aResult[0] == True):
+        if (sUrl == False):
+            sStreamUrl = aResult[1][0]
         else:
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setMediaUrl(aLink[1])
+            sStreamUrl = sUrl + aResult[1][0]
 
-            oPlayer = cPlayer()
-            oPlayer.addItemToPlaylist(oGuiElement)
-            oPlayer.startPlayer()
-        return
+        oHoster = cHosterHandler().getHoster(sHoster)
+        cHosterGui().showHoster(oGui, oHoster, sStreamUrl)
+        oGui.setEndOfDirectory()
+        return True
 
-    oGui.setEndOfDirectory()
+    return False
 
 def __getLanmguage(sString):
     if (sString == 'us_ger_small'):
@@ -558,11 +485,9 @@ def __getLanmguage(sString):
 
 def __createMainMenuItem(oGui, sTitle, sUrl, sFunction):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction(sFunction)
     oGuiElement.setTitle(sTitle)
     oOutputParameterHandler = cOutputParameterHandler()
     oOutputParameterHandler.addParameter('sUrl', sUrl)    
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
-
-

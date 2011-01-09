@@ -1,27 +1,23 @@
 import xbmc
 
 LOG_LEVEL_INFO = 0;
-LOG_LEVEL_WARNING = 1;
+LOG_LEVEL_ERROR = 1;
 LOG_LEVEL_FATAL = 2;
 
 logLevel = LOG_LEVEL_INFO# (config.getSetting("debug")=="true")
 
 def info(sInfo):
     if (logLevel <= LOG_LEVEL_INFO):
-        __writeLog('[INFO] ' + sInfo);
+        __writeLog(sInfo, xbmc.LOGNOTICE);
 
-def warning(sWarning):
-    if (logLevel <= LOG_LEVEL_WARNING):
-        __writeLog('[WARNING]' + sWarning);
-
-def fatal(sFatal):
+def error(sInfo):
     if (logLevel <= LOG_LEVEL_FATAL):
-        __writeLog('[FATAL]' + sFatal);
+         __writeLog(sInfo, xbmc.LOGERROR);
 
-def __writeLog(sLog):
-    #aStack = inspect.trace()
-    #print aStack
-    #sCallerFileName = aStack[0]
+def fatal(sInfo):
+    if (logLevel <= LOG_LEVEL_FATAL):
+         __writeLog(sInfo, xbmc.LOGFATAL);
 
-    xbmc.output(sLog)
+def __writeLog(sLog, cLogLevel):
+    xbmc.log("\t[PLUGIN] xStream: " + str(sLog), cLogLevel)
 
