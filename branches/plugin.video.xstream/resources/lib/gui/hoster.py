@@ -41,7 +41,7 @@ class cHosterGui:
         #Êplay
         self.__showPlayMenu(oGui, sMediaUrl, oHoster, bGetRedirectUrl)
 
-        #Êdownload
+        #download
         if (oHoster.isDownloadable() == True):
             self.__showDownloadMenu(oGui, sMediaUrl, oHoster, bGetRedirectUrl)        
 
@@ -66,7 +66,7 @@ class cHosterGui:
         oGuiElement = cGuiElement()
         oGuiElement.setSiteName(self.SITE_NAME)
         oGuiElement.setFunction('download')
-        oGuiElement.setTitle('download')
+        oGuiElement.setTitle('download ueber XBMC')
         oOutputParameterHandler = cOutputParameterHandler()
         oOutputParameterHandler.addParameter('sMediaUrl', sMediaUrl)
         oOutputParameterHandler.addParameter('sHosterIdentifier', oHoster.getPluginIdentifier())

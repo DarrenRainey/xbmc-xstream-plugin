@@ -3,6 +3,7 @@ from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.handler.inputParameterHandler import cInputParameterHandler
 from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
 from resources.lib.handler.requestHandler import cRequestHandler
+from resources.lib.parser import cParser
 import datetime
 
 class cAboutGui:
@@ -13,11 +14,11 @@ class cAboutGui:
 
     def show(self):
         oGui = cGui()
-        oGuiElement = cGuiElement()
+        '''oGuiElement = cGuiElement()
         oGuiElement.setSiteName(self.SITE_NAME)
         oGuiElement.setFunction('showStatistic')
         oGuiElement.setTitle('Statistik')
-        oGui.addFolder(oGuiElement)
+        oGui.addFolder(oGuiElement) '''
 
         '''oGuiElement = cGuiElement()
         oGuiElement.setSiteName(self.SITE_NAME)
@@ -29,7 +30,7 @@ class cAboutGui:
 
     def showStatistic(self):        
         oGui = cGui()
-        self.__getDateItems(oGui, 0)
+        self.__getDateItems(oGui, 2)
         oGui.setEndOfDirectory()
 
     def showInfo(self):
@@ -66,6 +67,7 @@ class cAboutGui:
             oRequest = cRequestHandler(self.URL_MAIN)
             oRequest.addParameters('date', sDate)
             sHtmlContent = oRequest.request()
+            print sHtmlContent
 
             sPattern = 'totalCount="([^"]+)"'
             oParser = cParser()
@@ -78,6 +80,7 @@ class cAboutGui:
             sPattern = '<plugin name="([^"]+)">(.*?)</plugin>'
             oParser = cParser()
             aResult = oParser.parse(sHtmlContent, sPattern)
+            print aResult
             if (aResult[0] == True):
                 for aEntry in aResult[1]:
                     sTitle = 'Plugin: ' + str(aEntry[0]) + ' - ' + str(aEntry[1]) + ' Aufrufe'
