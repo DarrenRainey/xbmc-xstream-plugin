@@ -1,9 +1,26 @@
 from resources.lib.parser import cParser
 from resources.lib.handler.requestHandler import cRequestHandler
+from hosters.hoster import iHoster
 
-class cHoster:
-    def getName(self):
-        return 'ZShare.net'
+class cHoster(iHoster):
+
+    def __init__(self):
+        self.__sDisplayName = 'ZShare.net'
+
+    def getDisplayName(self):
+        return  self.__sDisplayName
+
+    def setDisplayName(self, sDisplayName):
+        self.__sDisplayName = sDisplayName
+
+    def getPluginIdentifier(self):
+        return 'zshare'
+
+    def isDownloadable(self):
+        return True
+
+    def isJDownloaderable(self):
+        return True
 
     def getPattern(self):
         return ""
@@ -18,21 +35,24 @@ class cHoster:
         return self.__sUrl
 
     def getMediaLink(self):
+        return self.__getMediaLinkForGuest()
+
+    def __getMediaLinkForGuest(self):
         sPattern = '<iframe src="([^"]+)" '
 
         oRequest = cRequestHandler(self.getUrl())
         sHtmlContent = oRequest.request()
 
         oParser = cParser()
-        aResult = oParser.parse(sHtmlContent, sPattern)      
+        aResult = oParser.parse(sHtmlContent, sPattern)
         if (aResult[0] == True):
             sUrl = aResult[1][0]
 
             oRequest = cRequestHandler(sUrl)
             sHtmlContent = oRequest.request()
-            
+
             sPattern = '<a href="([^"]+)" style="color: #666666; text-decoration: none;font-size:10px" target=_top>Download Video</a>'
-            aResult = oParser.parse(sHtmlContent, sPattern)            
+            aResult = oParser.parse(sHtmlContent, sPattern)
             if (aResult[0] == True):
                 sUrl = aResult[1][0]
 
@@ -46,7 +66,7 @@ class cHoster:
 
                 sPattern = 'new Array.(.+?).;'
                 aResult = oParser.parse(sHtmlContent, sPattern)
-                
+
                 if (aResult[0] == True):
                     sUrl = aResult[1][0]
                     sUrl = sUrl.replace("'","").replace(",","")
@@ -56,5 +76,5 @@ class cHoster:
                     aResult.append(sUrl)
                     return aResult
 
-        return False
+        return False, ''
 

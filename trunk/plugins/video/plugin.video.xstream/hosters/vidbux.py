@@ -1,10 +1,27 @@
 from resources.lib.jsunpacker import cJsUnpacker
 from resources.lib.parser import cParser
 from resources.lib.handler.requestHandler import cRequestHandler
+from hosters.hoster import iHoster
 
-class cHoster:
-    def getName(self):
-        return 'vidbux.com'
+class cHoster(iHoster):
+
+    def __init__(self):
+        self.__sDisplayName = 'VidBux.com'
+
+    def getDisplayName(self):
+        return  self.__sDisplayName
+
+    def setDisplayName(self, sDisplayName):
+        self.__sDisplayName = sDisplayName
+
+    def getPluginIdentifier(self):
+        return 'vidbux'
+
+    def isDownloadable(self):
+        return True
+
+    def isJDownloaderable(self):
+        return True
 
     def getPattern(self):
         return ""
@@ -19,9 +36,12 @@ class cHoster:
         return self.__sUrl
 
     def getMediaLink(self):
+        return self.__getMediaLinkForGuest()
+
+    def __getMediaLinkForGuest(self):
         oRequest = cRequestHandler(self.__sUrl)
         sHtmlContent = oRequest.request()
-        
+
         sPattern = '<input name="([^"]+)".*?value=([^>]+)>'
         oParser = cParser()
         aResult = oParser.parse(sHtmlContent, sPattern)
@@ -57,5 +77,5 @@ class cHoster:
                 aResult.append(aResultLink[1][0])
                 return aResult
 
-        return False
+        return False, ''
 

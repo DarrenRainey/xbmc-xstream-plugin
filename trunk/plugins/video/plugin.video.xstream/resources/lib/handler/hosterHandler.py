@@ -4,7 +4,6 @@ import logger
 
 class cHosterHandler:
 
-
     def getUrl(self, oHoster):
         sUrl = oHoster.getUrl()
         logger.info('hosterhandler: ' + sUrl)
@@ -16,3 +15,8 @@ class cHosterHandler:
             if (aMediaLink[0] == True):               
                 return True, aMediaLink[1][0]
         return False, ''
+
+    def getHoster(self, sHosterFileName):
+        exec "from " + sHosterFileName + " import cHoster"
+        return cHoster()
+    

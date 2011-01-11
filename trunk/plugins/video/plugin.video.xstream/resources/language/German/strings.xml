@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
+        <!-- general begin by 30000 - 30050 -->
         <string id="30000">Logging</string>
         <string id="30001">Videoplayer</string>
         <string id="30002">anonyme Statistiken (wertet nur Plugin Start aus)</string>
 
-        <!-- Plugins begin by 30100 -->
-        <string id="30101">Plugin Kino.to anschalten</string>
-        <string id="30102">Plugin Souhtpark.de anschalten</string>
-        <string id="30103">Plugin Myp2p.eu anschalten</string>
-        <string id="30104">Plugin G-Stream.in anschalten</string>
-        <string id="30105">Plugin NBA.de anschalten</string>
-        <string id="30106">Plugin Bundesliga.de anschalten</string>
-        <string id="30107">Plugin MTV.de anschalten</string>
-        <string id="30108">Plugin Kino.de anschalten</string>
-        <string id="30109">Plugin Bild.de anschalten</string>
-        <string id="30110">Plugin MovieMaze.de anschalten</string>
-        <string id="30111">Plugin Shoutcast.com anschalten</string>
-        <string id="30112">Plugin Movie2k.com anschalten</string>
-        <string id="30113">Plugin Simpsons.to anschalten</string>
-        <string id="30114">Plugin Iload.to anschalten</string>
-        <string id="30115">Plugin Br-Online.de anschalten</string>
-        <string id="30116">Plugin Anime-stream24.com anschalten</string>
-        <string id="30117">Plugin RadioTime.com anschalten</string>
+        <!-- settingtabs begin by 30021 - 30030 -->
+        <string id="30021">Allgemein</string>
+        <string id="30022">Plugins an/aus</string>
+        <string id="30023">Plugins Einstellungen</string>
+        <string id="30024">Hoster</string>
 
-        <!-- Pluginsname  -->
-        <string id="30201">Kino.to</string>
+         <!-- premium begin by 30031 - 30070 -->
+        <string id="30031">Megavideo Premium Account</string>
+        <string id="30032">Megavideo Username</string>
+        <string id="30033">Megavideo Password</string>
+
+        <string id="30034">Duckload Premium Account</string>
+        <string id="30035">Duckload Username</string>
+        <string id="30036">Duckload Password</string>
+
+        <string id="30071">JDownloader an/aus</string>
+        <string id="30072">Host</string>
+        <string id="30073">Port</string>
+        <string id="30074">Download automatsch starten</string>
+        <string id="30075">sende nur an LinkGrabber</string>
+
+
+        <!-- Pluginnames begin by 30201 - 30299 -->
+        <!--<string id="30201">Kino.to</string>
         <string id="30202">Souhtpark.de</string>
         <string id="30203">Myp2p.eu</string>
         <string id="30204">G-Stream.in</string>
@@ -40,7 +44,7 @@
         <string id="30214">Iload.to</string>
         <string id="30215">Br-Online.de</string>
         <string id="30216">Anime-stream24.com</string>
-        <string id="30217">RadioTime.com</string>
+        <string id="30217">RadioTime.com</string> -->
 
         <string id="30302">Staffeln Deutsch</string>
         <string id="30303">Staffeln Englisch</string>
@@ -52,9 +56,5 @@
         <string id="30309">Bitte warte %s Sekunden</string>
 
         <string id="30402">Laender</string>
-
-
-
-
 </strings>
 

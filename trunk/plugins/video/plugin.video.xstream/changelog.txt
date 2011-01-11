@@ -1,4 +1,24 @@
 ================================================================================
+- Version 1.0.0 - 11.01.2011
+================================================================================
+    - add simple host structures
+    - add premiumaccount (megavideo.com, duckload.com)
+    - new settingsdialog
+    - add JDownloader integration
+    - code refactoring
+    - site refactoring
+    
+    - add new sites:
+        - burning-series.org
+        - kinokiste.com
+
+    - add new hosters:
+        - xvidstage.com
+        - filesup.com
+        - filebase.to
+        - ecostream.tv
+
+================================================================================
 - Version 0.4.5 - 02.01.2011
 ================================================================================
     - add site radiotime.com
@@ -26,7 +46,7 @@
 - Version 0.4.3 - 28.12.2010
 ================================================================================
     - add site br-online.de
-        - program:Êalpha-Centauri
+        - program:ï¿½alpha-Centauri
 
 ================================================================================
 - Version 0.4.2 - 27.12.2010

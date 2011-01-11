@@ -1,30 +1,47 @@
+from resources.lib.handler.premiumHandler import cPremiumHandler
+from resources.lib.util import cUtil
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.parser import cParser
+from hosters.hoster import iHoster
 import re
 
-class cHoster:
-    def getName(self):
-        return 'MegaVideo.com'
+class cHoster(iHoster):
+
+    def __init__(self):
+        self.__sDisplayName = 'MegaVideo.com'
+
+    def getDisplayName(self):
+        return  self.__sDisplayName
+
+    def setDisplayName(self, sDisplayName):
+        self.__sDisplayName = sDisplayName
+
+    def getPluginIdentifier(self):
+        return 'megavideo'
+
+    def isDownloadable(self):
+        return True
+
+    def isJDownloaderable(self):
+        return True
 
     def getPattern(self):
         return ' errortext="(.+?)"'
 
-    def setUrl(self, sUrl):        
+    def setUrl(self, sUrl):
         sUrl = str(self.__modifyUrl(sUrl))
-        sUrl = sUrl.replace('http://www.megavideo.com/?v=', '')
-        self.__sUrl = 'http://www.megavideo.com/xml/videolink.php?v=' + str(sUrl)
-
+        self.__sUrl = sUrl.replace('http://www.megavideo.com/?v=', '')
+        self.__sUrl = sUrl.replace('http://megavideo.com/?v=', '')
+        self.__sUrl = 'http://www.megavideo.com/?v=' + str(self.__sUrl)
+        print self.__sUrl
+        
     def __modifyUrl(self, sUrl):
         if (sUrl.startswith('http://www.megavideo.com/v/')):
             oRequestHandler = cRequestHandler(sUrl)
             oRequestHandler.request()
             sRealUrl = oRequestHandler.getRealUrl()
-
-            sPattern = "v=([^&]+)"
-            oParser = cParser()
-            aResult = oParser.parse(sRealUrl, sPattern)            
-            if (aResult[0] == True):
-                return (aResult[1][0])
+            self.__sUrl = sRealUrl
+            return self.__getIdFromUrl()
 
         return sUrl;
 
@@ -34,12 +51,33 @@ class cHoster:
     def getUrl(self):
         return self.__sUrl
 
-    def getMediaLink(self):
-                
+    def getMediaLink(self):        
+        oPremiumHandler = cPremiumHandler(self.getPluginIdentifier())
+        if (oPremiumHandler.isPremiumModeAvailable()):
+            sUsername = oPremiumHandler.getUsername()
+            sPassword = oPremiumHandler.getPassword()
+            return self.__getMediaLinkByPremiumUser(sUsername, sPassword);
+
+        return self.__getMediaLinkForGuest();
+
+    def __getIdFromUrl(self):
+        sPattern = "v=([^&]+)"
+        oParser = cParser()
+        aResult = oParser.parse(self.__sUrl, sPattern)
+        if (aResult[0] == True):
+            return aResult[1][0]
+
+        return ''
+
+    def __getMediaLinkForGuest(self):
+        sId = self.__getIdFromUrl()
+
+        self.__sUrl = 'http://www.megavideo.com/xml/videolink.php?v=' + str(sId)
+
         oRequest = cRequestHandler(self.getUrl())
         oRequest.addHeaderEntry('Referer', 'http://www.megavideo.com/')
         sContent = oRequest.request()
-        
+
         aResult = cParser().parse(sContent, self.getPattern())
         
         if (aResult[0] == False):
@@ -52,7 +90,7 @@ class cHoster:
 
             aResult = []
             aResult.append(True)
-            aResult.append(sUrl)            
+            aResult.append(sUrl)
             return aResult
 
         aResult = []
@@ -60,6 +98,38 @@ class cHoster:
         aResult.append('')
         return aResult
 
+
+    def __getMediaLinkByPremiumUser(self, sUsername, sPassword):
+        oRequestHandler = cRequestHandler('http://www.megavideo.com/?s=account')
+        oRequestHandler.setRequestType(cRequestHandler.REQUEST_TYPE_POST)
+        oRequestHandler.addParameters('login', '1')
+        oRequestHandler.addParameters('username', sUsername)
+        oRequestHandler.addParameters('password', sPassword)
+        oRequestHandler.request()
+      
+        aHeader = oRequestHandler.getResponseHeader();
+        sReponseCookie = aHeader.getheader("Set-Cookie")
+
+        self.__sUrl = self.__getIdFromUrl()
+        
+        sPattern = 'user=([^;]+);'
+        oParser = cParser()
+        aResult = oParser.parse(sReponseCookie, sPattern)
+        if (aResult[0] == True):
+            sUserId = aResult[1][0]
+            sUrl = 'http://www.megavideo.com/xml/player_login.php?u=' + str(sUserId) + '&v=' + str(self.__sUrl)
+            oRequestHandler = cRequestHandler(sUrl)
+            sXmlContent = oRequestHandler.request()
+
+            sPattern = 'downloadurl="([^"]+)"'
+            oParser = cParser()
+            aResult = oParser.parse(sXmlContent, sPattern)
+            
+            if (aResult[0] == True):
+                sMediaLink = cUtil().urlDecode(str(aResult[1][0]))
+                return True, sMediaLink
+
+        return False, ''
 
     def __decrypt(self, str1, key1, key2):
 

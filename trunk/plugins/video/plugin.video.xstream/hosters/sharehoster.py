@@ -1,13 +1,29 @@
-import logger
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.parser import cParser
 from resources.lib.gui.gui import cGui
+from hosters.hoster import iHoster
 import time
 import random
 
-class cHoster:
-    def getName(self):
-        return 'Duckload.com'
+class cHoster(iHoster):
+
+    def __init__(self):
+        self.__sDisplayName = 'ShareHoster.com'
+
+    def getDisplayName(self):
+        return  self.__sDisplayName
+
+    def setDisplayName(self, sDisplayName):
+        self.__sDisplayName = sDisplayName
+
+    def getPluginIdentifier(self):
+        return 'sharehoster'
+
+    def isDownloadable(self):
+        return True
+
+    def isJDownloaderable(self):
+        return True
 
     def getPattern(self):
         return ""
@@ -22,6 +38,9 @@ class cHoster:
         return self.__sUrl
 
     def getMediaLink(self):
+        return self.__getMediaLinkForGuest()
+
+    def __getMediaLinkForGuest(self):
         sSecondsForWait = 10;
 
         oRequest = cRequestHandler(self.__sUrl)
@@ -41,7 +60,7 @@ class cHoster:
             aResult = oParser.parse(sHtmlContent, sPattern)
             if (aResult[0] == True):
                 sWait = aResult[1][0]
-                
+
                 sPattern = 'var time_wait = ([^;]+);'
                 oParser = cParser()
                 aResult = oParser.parse(sHtmlContent, sPattern)
