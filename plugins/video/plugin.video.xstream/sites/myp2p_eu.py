@@ -1,4 +1,3 @@
-from resources.lib.player import cPlayer
 from resources.lib.handler.inputParameterHandler import cInputParameterHandler
 from resources.lib.config import cConfig
 from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
@@ -6,21 +5,22 @@ from resources.lib.parser import cParser
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.gui.gui import cGui
-import logger
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 
-SITE_NAME = 'myp2p_eu'
+SITE_IDENTIFIER = 'myp2p_eu'
+SITE_NAME = 'MyP2P.eu'
 
 URL_MAIN = 'http://www.myp2p.eu/'
 URL_COUNTRY_SITE = 'http://www.myp2p.eu/channel.php?&part=channel&sel_country=yes'
 
 def load():
-    logger.info('load myp2peu :)')
-
+    
     oConfig = cConfig()
     oGui = cGui()
 
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('showCountrySite')
     oGuiElement.setTitle(oConfig.getLocalizedString(30402))
     oGui.addFolder(oGuiElement)
@@ -44,7 +44,7 @@ def showCountrySite():
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('showSubChannels')
             oGuiElement.setTitle(aEntry[2])
             oGuiElement.setThumbnail(aEntry[1])
@@ -55,81 +55,34 @@ def showCountrySite():
 
     oGui.setEndOfDirectory()
 
-def showSubChannels():
-    oConfig = cConfig()
+def showSubChannels():    
     oGui = cGui()
 
     oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('channelUrl')):
-        sChanellUrl = oInputParameterHandler.getValue('channelUrl')
+        sChannelUrl = oInputParameterHandler.getValue('channelUrl')
 
-        oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
-        oGuiElement.setFunction('parseSubChannels')
-        oGuiElement.setTitle('nicht zugeordnet')
-        oOutputParameterHandler = cOutputParameterHandler()
-        oOutputParameterHandler.addParameter('channelUrl', sChanellUrl)
-        oOutputParameterHandler.addParameter('channelType', 0)
-        oGui.addFolder(oGuiElement, oOutputParameterHandler)
-
-        oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
-        oGuiElement.setFunction('parseSubChannels')
-        oGuiElement.setTitle('Unterhaltung')
-        oOutputParameterHandler = cOutputParameterHandler()
-        oOutputParameterHandler.addParameter('channelUrl', sChanellUrl)
-        oOutputParameterHandler.addParameter('channelType', 1)
-        oGui.addFolder(oGuiElement, oOutputParameterHandler)
-
-        oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
-        oGuiElement.setFunction('parseSubChannels')
-        oGuiElement.setTitle('Kinder')
-        oOutputParameterHandler = cOutputParameterHandler()
-        oOutputParameterHandler.addParameter('channelUrl', sChanellUrl)
-        oOutputParameterHandler.addParameter('channelType', 2)
-        oGui.addFolder(oGuiElement, oOutputParameterHandler)
-
-        oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
-        oGuiElement.setFunction('parseSubChannels')
-        oGuiElement.setTitle('Musik')
-        oOutputParameterHandler = cOutputParameterHandler()
-        oOutputParameterHandler.addParameter('channelUrl', sChanellUrl)
-        oOutputParameterHandler.addParameter('channelType', 3)
-        oGui.addFolder(oGuiElement, oOutputParameterHandler)
-
-        oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
-        oGuiElement.setFunction('parseSubChannels')
-        oGuiElement.setTitle('Nachrichten')
-        oOutputParameterHandler = cOutputParameterHandler()
-        oOutputParameterHandler.addParameter('channelUrl', sChanellUrl)
-        oOutputParameterHandler.addParameter('channelType', 4)
-        oGui.addFolder(oGuiElement, oOutputParameterHandler)
-
-        oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
-        oGuiElement.setFunction('parseSubChannels')
-        oGuiElement.setTitle('Sport')
-        oOutputParameterHandler = cOutputParameterHandler()
-        oOutputParameterHandler.addParameter('channelUrl', sChanellUrl)
-        oOutputParameterHandler.addParameter('channelType', 5)
-        oGui.addFolder(oGuiElement, oOutputParameterHandler)
-
-        oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
-        oGuiElement.setFunction('parseSubChannels')
-        oGuiElement.setTitle('Alle anzeigen')
-        oOutputParameterHandler = cOutputParameterHandler()
-        oOutputParameterHandler.addParameter('channelUrl', sChanellUrl)
-        oOutputParameterHandler.addParameter('channelType', 6)
-        oGui.addFolder(oGuiElement, oOutputParameterHandler)
+        __createSubChannel(oGui, 'nicht zugeordnet', sChannelUrl, 0)
+        __createSubChannel(oGui, 'Unterhaltung', sChannelUrl, 1)
+        __createSubChannel(oGui, 'Kinder', sChannelUrl, 2)
+        __createSubChannel(oGui, 'Musik', sChannelUrl, 3)
+        __createSubChannel(oGui, 'Nachrichten', sChannelUrl, 4)
+        __createSubChannel(oGui, 'Sport', sChannelUrl, 5)
+        __createSubChannel(oGui, 'Alle anzeigen', sChannelUrl, 6)
 
     oGui.setEndOfDirectory()
 
-def parseSubChannels():
-    oConfig = cConfig()
+def __createSubChannel(oGui, sTitle, sChannelUrl, iChannelType):
+    oGuiElement = cGuiElement()
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
+    oGuiElement.setFunction('parseSubChannels')
+    oGuiElement.setTitle(sTitle)
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('channelUrl', sChannelUrl)
+    oOutputParameterHandler.addParameter('channelType', iChannelType)
+    oGui.addFolder(oGuiElement, oOutputParameterHandler)
+
+def parseSubChannels():    
     oGui = cGui()
 
     oInputParameterHandler = cInputParameterHandler()
@@ -183,30 +136,8 @@ def parseSubChannels():
                 
                 if (aResult[0] == True):
                     for aEntry in aResult[1]:
-                        #if (aEntry[0][0:3] == 'mms') or (aEntry[0][0:4] == 'rtsp'):
-                        oGuiElement = cGuiElement()
-                        oGuiElement.setSiteName(SITE_NAME)
-                        oGuiElement.setFunction('playStream')
-                        oGuiElement.setTitle(aEntry[1])
-                        oOutputParameterHandler = cOutputParameterHandler()
-                        oOutputParameterHandler.addParameter('playUrl', aEntry[0])
-                        oGui.addFolder(oGuiElement, oOutputParameterHandler)
+                        oHoster = cHosterHandler().getHoster('myp2p')
+                        oHoster.setDisplayName(aEntry[1])
+                        cHosterGui().showHoster(oGui, oHoster, aEntry[0])
 
-    oGui.setEndOfDirectory()
-
-def playStream():
-    oGui = cGui()
-
-    oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('playUrl')):
-        playUrl = oInputParameterHandler.getValue('playUrl')
-
-        oPlayer = cPlayer()
-        oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
-        oGuiElement.setMediaUrl(playUrl)
-        oPlayer.addItemToPlaylist(oGuiElement)
-        oPlayer.startPlayer()
-        return
-        
     oGui.setEndOfDirectory()

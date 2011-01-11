@@ -1,85 +1,108 @@
-import urllib
-import logger
 from resources.lib.gui.gui import cGui
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.handler.inputParameterHandler import cInputParameterHandler
 from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.parser import cParser
-from resources.lib.player import cPlayer
 from resources.lib.util import cUtil
-from resources.lib.gui.contextElement import cContextElement
-from resources.lib.download import cDownload
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 
-SITE_NAME = 'iload_to'
+SITE_IDENTIFIER = 'iload_to'
+SITE_NAME = 'ILoad.to'
+
 URL_MAIN = 'http://iload.to'
 URL_MOVIE_PAGE = 'http://iload.to/category/1-Filme/'
 URL_CHARACTERS = 'http://iload.to/category/1-Filme/letter'
 URL_SEARCH = 'http://iload.to/ajax/module/category/1-Filme/search/'
 
+COOKIE_SECURITY_NAME = 'suilid'
+
 def load():
-    logger.info('load iloadto :)')
+    sCookieValue = __getSecurityCookieValue()
 
     oGui = cGui()
 
     oOutputParameterHandler = cOutputParameterHandler()
     oOutputParameterHandler.addParameter('siteUrl', URL_CHARACTERS)
+    oOutputParameterHandler.addParameter('security', sCookieValue)
     __createMenuEntry(oGui, 'showCharacters', 'Filme', oOutputParameterHandler)
 
     oOutputParameterHandler = cOutputParameterHandler()
     oOutputParameterHandler.addParameter('siteUrl', URL_MAIN)
+    oOutputParameterHandler.addParameter('security', sCookieValue)
     __createMenuEntry(oGui, 'showCinemaMovies', 'aktuelle KinoFilme', oOutputParameterHandler)
 
     oOutputParameterHandler = cOutputParameterHandler()
-    oOutputParameterHandler.addParameter('siteUrl', URL_MOVIE_PAGE)    
+    oOutputParameterHandler.addParameter('siteUrl', URL_MOVIE_PAGE)
+    oOutputParameterHandler.addParameter('security', sCookieValue)
     __createMenuEntry(oGui, 'displayGenre', 'Genre', oOutputParameterHandler)
     
     oOutputParameterHandler = cOutputParameterHandler()
-    oOutputParameterHandler.addParameter('siteUrl', URL_SEARCH)    
+    oOutputParameterHandler.addParameter('siteUrl', URL_SEARCH)
+    oOutputParameterHandler.addParameter('security', sCookieValue)
     __createMenuEntry(oGui, 'displaySearch', 'Suche', oOutputParameterHandler)
     
     oGui.setEndOfDirectory()
 
+def __getSecurityCookieValue():
+    oRequestHandler = cRequestHandler(URL_MAIN)
+    oRequestHandler.request();
+    aHeader = oRequestHandler.getResponseHeader()
+    sReponseCookie = aHeader.getheader("Set-Cookie")
+
+    sPattern = COOKIE_SECURITY_NAME + '=([^;]+);'
+    oParser = cParser()
+    aResult = oParser.parse(sReponseCookie, sPattern)
+    if (aResult[0] == True):        
+        return COOKIE_SECURITY_NAME + '=' + str(aResult[1][0])
+
+    return ''
+
 def __createMenuEntry(oGui, sFunction, sLabel, oOutputParameterHandler = ''):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction(sFunction)
     oGuiElement.setTitle(sLabel)
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
 def showCharacters():
+
+    oInputParameterHandler = cInputParameterHandler()
+    sSecurity = oInputParameterHandler.getValue('security')
+
     oGui = cGui()
-    __createCharacters(oGui, '#')
-    __createCharacters(oGui, 'A')
-    __createCharacters(oGui, 'B')
-    __createCharacters(oGui, 'C')
-    __createCharacters(oGui, 'D')
-    __createCharacters(oGui, 'E')
-    __createCharacters(oGui, 'F')
-    __createCharacters(oGui, 'G')
-    __createCharacters(oGui, 'H')
-    __createCharacters(oGui, 'I')
-    __createCharacters(oGui, 'J')
-    __createCharacters(oGui, 'K')
-    __createCharacters(oGui, 'L')
-    __createCharacters(oGui, 'N')
-    __createCharacters(oGui, 'O')
-    __createCharacters(oGui, 'Q')
-    __createCharacters(oGui, 'R')
-    __createCharacters(oGui, 'S')
-    __createCharacters(oGui, 'T')
-    __createCharacters(oGui, 'U')
-    __createCharacters(oGui, 'V')
-    __createCharacters(oGui, 'W')
-    __createCharacters(oGui, 'X')
-    __createCharacters(oGui, 'Y')
-    __createCharacters(oGui, 'Z')
+    __createCharacters(oGui, '#', sSecurity)
+    __createCharacters(oGui, 'A', sSecurity)
+    __createCharacters(oGui, 'B', sSecurity)
+    __createCharacters(oGui, 'C', sSecurity)
+    __createCharacters(oGui, 'D', sSecurity)
+    __createCharacters(oGui, 'E', sSecurity)
+    __createCharacters(oGui, 'F', sSecurity)
+    __createCharacters(oGui, 'G', sSecurity)
+    __createCharacters(oGui, 'H', sSecurity)
+    __createCharacters(oGui, 'I', sSecurity)
+    __createCharacters(oGui, 'J', sSecurity)
+    __createCharacters(oGui, 'K', sSecurity)
+    __createCharacters(oGui, 'L', sSecurity)
+    __createCharacters(oGui, 'N', sSecurity)
+    __createCharacters(oGui, 'O', sSecurity)
+    __createCharacters(oGui, 'Q', sSecurity)
+    __createCharacters(oGui, 'R', sSecurity)
+    __createCharacters(oGui, 'S', sSecurity)
+    __createCharacters(oGui, 'T', sSecurity)
+    __createCharacters(oGui, 'U', sSecurity)
+    __createCharacters(oGui, 'V', sSecurity)
+    __createCharacters(oGui, 'W', sSecurity)
+    __createCharacters(oGui, 'X', sSecurity)
+    __createCharacters(oGui, 'Y', sSecurity)
+    __createCharacters(oGui, 'Z', sSecurity)
     
     oGui.setEndOfDirectory()
 
-def __createCharacters(oGui, sCharacter):
+def __createCharacters(oGui, sCharacter, sCookieValue):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('showMovies')
     oGuiElement.setTitle(sCharacter)
 
@@ -91,17 +114,21 @@ def __createCharacters(oGui, sCharacter):
     oOutputParameterHandler = cOutputParameterHandler()
     oOutputParameterHandler.addParameter('siteUrl', sUrl)
     oOutputParameterHandler.addParameter('page', '1')
+    oOutputParameterHandler.addParameter('security', sCookieValue)
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
 def displaySearch():
     oGui = cGui()
+    oInputParameterHandler = cInputParameterHandler()
+    sSecurity = oInputParameterHandler.getValue('security')
+
 
     sSearchText = oGui.showKeyBoard()
     if (sSearchText != False):
 
         sSearchText = sSearchText.replace(' ', '+')
         sUrl = URL_SEARCH + str(sSearchText) + '/'
-        __showMovies(sUrl, 1)
+        __showMovies(sUrl, 1, sSecurity)
         return
 
     oGui.setEndOfDirectory()
@@ -110,8 +137,10 @@ def displayGenre():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
     sUrl = oInputParameterHandler.getValue('siteUrl')
+    sSecurity = oInputParameterHandler.getValue('security')
 
     oRequestHandler = cRequestHandler(sUrl)
+    oRequestHandler.addHeaderEntry('Cookie', sSecurity)
     sHtmlContent = oRequestHandler.request();
 
     sPattern = '<a href="([^"]+)" class="next level3">.*?<div>(.*?)</div>'
@@ -120,13 +149,14 @@ def displayGenre():
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('showMovies')
             oGuiElement.setTitle(aEntry[1])
 
             oOutputParameterHandler = cOutputParameterHandler()
             oOutputParameterHandler.addParameter('page', '1')
-            oOutputParameterHandler.addParameter('siteUrl', URL_MAIN + str(aEntry[0]))            
+            oOutputParameterHandler.addParameter('siteUrl', URL_MAIN + str(aEntry[0]))
+            oOutputParameterHandler.addParameter('security', sSecurity)
             oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
@@ -137,26 +167,29 @@ def showMovies():
     oInputParameterHandler = cInputParameterHandler()
     sSiteUrl = oInputParameterHandler.getValue('siteUrl')
     iPage = oInputParameterHandler.getValue('page')
-    __showMovies(sSiteUrl, iPage)
+    sSecurity = oInputParameterHandler.getValue('security')
+
+    __showMovies(sSiteUrl, iPage, sSecurity)
     
 
-def __showMovies(sSiteUrl, iPage):
+def __showMovies(sSiteUrl, iPage, sSecurity):
     oGui = cGui()
 
     sUrl = str(sSiteUrl) + str('page/') + str(iPage)
-    
+
     oRequestHandler = cRequestHandler(sUrl)
+    oRequestHandler.addHeaderEntry('Cookie', sSecurity)
     sHtmlContent = oRequestHandler.request();
     sHtmlContent = str(sHtmlContent).replace('\\', '')
-
+    
     sPattern = '<table class="row">.*?class="list-cover".*?<img src="([^"]+)">.*?class="list-name".*?<a href="([^"]+)".*?>(.*?)</a>.*?class="description".*?>(.*?)</td>'
     oParser = cParser()
     aResult = oParser.parse(sHtmlContent, sPattern)
-
+    
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('showRelease')
             oGuiElement.setTitle(cUtil().removeHtmlTags(aEntry[2]))
             oGuiElement.setThumbnail(aEntry[0])
@@ -164,18 +197,20 @@ def __showMovies(sSiteUrl, iPage):
 
             oOutputParameterHandler = cOutputParameterHandler()
             oOutputParameterHandler.addParameter('movieUrl', URL_MAIN + str(aEntry[1]))
+            oOutputParameterHandler.addParameter('security', sSecurity)
             oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     sNextUrl = __checkForNextPage(sHtmlContent, iPage)
     if (sNextUrl != False):
         oGuiElement = cGuiElement()
-        oGuiElement.setSiteName(SITE_NAME)
+        oGuiElement.setSiteName(SITE_IDENTIFIER)
         oGuiElement.setFunction('showMovies')
         oGuiElement.setTitle('next ..')
 
         oOutputParameterHandler = cOutputParameterHandler()
         oOutputParameterHandler.addParameter('siteUrl', sSiteUrl)
         oOutputParameterHandler.addParameter('page', int(iPage) + 1)
+        oOutputParameterHandler.addParameter('security', sSecurity)
         oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
@@ -198,8 +233,10 @@ def showCinemaMovies():
 
     oInputParameterHandler = cInputParameterHandler()
     sUrl = oInputParameterHandler.getValue('siteUrl')
+    sSecurity = oInputParameterHandler.getValue('security')
 
     oRequestHandler = cRequestHandler(sUrl)
+    oRequestHandler.addHeaderEntry('Cookie', sSecurity)
     sHtmlContent = oRequestHandler.request();
 
     sPattern = '<div class="toptitle-slider-content"(.*?)</div>'
@@ -214,25 +251,48 @@ def showCinemaMovies():
             if (aResult[0] == True):
                 for aEntry in aResult[1]:
                     oGuiElement = cGuiElement()
-                    oGuiElement.setSiteName(SITE_NAME)
+                    oGuiElement.setSiteName(SITE_IDENTIFIER)
                     oGuiElement.setFunction('showRelease')
                     oGuiElement.setTitle(cUtil().removeHtmlTags(aEntry[2]))
                     oGuiElement.setThumbnail(aEntry[1])
                   
                     oOutputParameterHandler = cOutputParameterHandler()
                     oOutputParameterHandler.addParameter('movieUrl', URL_MAIN + str(aEntry[0]))
+                    oOutputParameterHandler.addParameter('security', sSecurity)
                     oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
+    oGui.setEndOfDirectory()
+
+def __createInfo(oGui, sHtmlContent):
+    sPattern = '<table class="description">.*?<td class="cover"><a href="([^"]+)".*?<td class="text">(.*?)</td>'
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+    if (aResult[0] == True):
+        for aEntry in aResult[1]:
+            oGuiElement = cGuiElement()
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
+            oGuiElement.setTitle('info (press Info Button)')
+            oGuiElement.setThumbnail(str(aEntry[0]))
+            oGuiElement.setFunction('dummyFolder')
+            oGuiElement.setDescription(cUtil().removeHtmlTags(str(aEntry[1])))
+            oGui.addFolder(oGuiElement)
+
+def dummyFolder():
+    oGui = cGui()
     oGui.setEndOfDirectory()
 
 def showRelease():
     oGui = cGui()
 
     oInputParameterHandler = cInputParameterHandler()
+    sSecurity = oInputParameterHandler.getValue('security')
     sUrl = oInputParameterHandler.getValue('movieUrl')
     
     oRequestHandler = cRequestHandler(sUrl)
+    oRequestHandler.addHeaderEntry('Cookie', sSecurity)
     sHtmlContent = oRequestHandler.request();
+
+    __createInfo(oGui, sHtmlContent)
 
     sPattern = '<table class="release-list">(.*?)</table>'
     oParser = cParser()
@@ -246,15 +306,41 @@ def showRelease():
 
             if (aResult[0] == True):
                 for aEntry in aResult[1]:
-
                     oGuiElement = cGuiElement()
-                    oGuiElement.setSiteName(SITE_NAME)
+                    oGuiElement.setSiteName(SITE_IDENTIFIER)
                     oGuiElement.setFunction('showStreams')
                     oGuiElement.setTitle(__createTitleWithLanguage(aEntry[2], aEntry[1]))
 
                     oOutputParameterHandler = cOutputParameterHandler()
                     oOutputParameterHandler.addParameter('movieUrl', URL_MAIN + str(aEntry[0]))
+                    oOutputParameterHandler.addParameter('security', sSecurity)
                     oGui.addFolder(oGuiElement, oOutputParameterHandler)
+    else:
+        sPattern = '<a href="([^"]+)" target="_self" data-tab="ReleaseTab" data-tab-name="Downloads">Downloads</a>'
+
+        oParser = cParser()
+        aResult = oParser.parse(sHtmlContent, sPattern)
+
+        if (aResult[0] == True):
+            for aEntry in aResult[1]:
+                oGuiElement = cGuiElement()
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
+                oGuiElement.setFunction('showStreams')
+
+                sPattern = '<a href="/release/(.*?)">([^"]+)</a>'
+                oParser = cParser()
+                aResultTitle = oParser.parse(sHtmlContent, sPattern)
+
+                if (aResultTitle[0] == True):
+                    sTitle = aResultTitle[1][0][1]                    
+                    oGuiElement.setTitle(sTitle)
+                else:
+                    oGuiElement.setTitle('no title')
+
+                oOutputParameterHandler = cOutputParameterHandler()
+                oOutputParameterHandler.addParameter('movieUrl', sUrl)
+                oOutputParameterHandler.addParameter('security', sSecurity)
+                oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
 
@@ -263,8 +349,10 @@ def showStreams():
 
     oInputParameterHandler = cInputParameterHandler()
     sUrl = oInputParameterHandler.getValue('movieUrl')
+    sSecurity = oInputParameterHandler.getValue('security')
 
     oRequestHandler = cRequestHandler(sUrl)
+    oRequestHandler.addHeaderEntry('Cookie', sSecurity)
     sHtmlContent = oRequestHandler.request();
 
     sPattern = '<div class="SEP"><div><div></div><h3>DivX Streams</h3><div></div></div></div>(.*?)</table>'
@@ -292,101 +380,36 @@ def __parseHosters(sFormat, oGui, sHtmlContent):
     if (aResult[0] == True):
         for aEntry in aResult[1]:
 
-            sHostername = __checkHoster(str(aEntry[0]))
-            if (sHostername != False):
-                oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
-                oGuiElement.setFunction('playMovieFromHoster')
-                oGuiElement.setTitle(str(sFormat) + ' - ' + str(aEntry[0]) + ' - ' + str(aEntry[1]))
-
-                oOutputParameterHandler = cOutputParameterHandler()
-                oOutputParameterHandler.addParameter('sHosterFileName', sHostername)
-                oOutputParameterHandler.addParameter('linkToHosterMediaFile', str(aEntry[2]))
-                
-                 # download context menu
-                oContextElement = cContextElement()
-                oContextElement.setTitle('Download')
-                oContextElement.setFile(SITE_NAME)
-                oContextElement.setFunction('downloadStreamFile')
-                oOutputParameterHandlerDownload = cOutputParameterHandler()
-                oOutputParameterHandlerDownload.addParameter('sHosterFileName', sHostername)
-                oOutputParameterHandlerDownload.addParameter('linkToHosterMediaFile', str(aEntry[2]))
-                oContextElement.setOutputParameterHandler(oOutputParameterHandlerDownload)
-                oGuiElement.addContextItem(oContextElement)
-                oGui.addFolder(oGuiElement, oOutputParameterHandler)
+            oHoster = __getHoster(str(aEntry[0]))
+            if (oHoster != False):
+                sTitle = str(sFormat) + ' - ' + str(aEntry[0]) + ' - ' + str(aEntry[1])
+                oHoster.setDisplayName(sTitle)
+                cHosterGui().showHoster(oGui, oHoster, str(aEntry[2]))                
 
 
-def __checkHoster(sHosterName):
+def __getHoster(sHosterName):
     if (sHosterName == 'filestage.to'):
-        return 'filestage'
+        return cHosterHandler().getHoster('filestage')
 
     if (sHosterName == 'megavideo.com'):
-        return 'megavideo'
+        return cHosterHandler().getHoster('megavideo')
 
     if (sHosterName == 'mystream.to'):
-        return 'mystream'
+        return cHosterHandler().getHoster('mystream')
     
     if (sHosterName == 'duckload.com'):
-        return 'duckload'
+        return cHosterHandler().getHoster('duckload')
 
     if (sHosterName == 'tubeload.to'):
-        return 'tubeload'
+        return cHosterHandler().getHoster('tubeload')
     
     if (sHosterName == 'videoweed.com'):
-        return 'videoweed'
+        return cHosterHandler().getHoster('videoweed')
 
     if (sHosterName == 'zshare.net'):
-        return 'zshare'
-    
+        return cHosterHandler().getHoster('zshare')    
 
     return False
-
-def playMovieFromHoster():
-    oGui = cGui()
-
-    oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('sHosterFileName') and oInputParameterHandler.exist('linkToHosterMediaFile')):
-        sHosterFileName = oInputParameterHandler.getValue('sHosterFileName')
-        linkToHosterMediaFile = oInputParameterHandler.getValue('linkToHosterMediaFile')
-
-        #try:
-        exec "from " + sHosterFileName + " import cHoster"
-        oHoster = cHoster()
-        oHoster.setUrl(linkToHosterMediaFile)
-        aLink = oHoster.getMediaLink()
-        if (aLink[0] == True):
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setMediaUrl(aLink[1])
-
-            oPlayer = cPlayer()
-            oPlayer.addItemToPlaylist(oGuiElement)
-            oPlayer.startPlayer()
-            return
-
-        #except:
-        #    logger.fatal('could not load plugin: ' + sHosterFileName)
-
-    oGui.setEndOfDirectory()
-
-def downloadStreamFile():
-    oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('sHosterFileName') and oInputParameterHandler.exist('linkToHosterMediaFile')):
-        sHosterFileName = oInputParameterHandler.getValue('sHosterFileName')
-        linkToHosterMediaFile = oInputParameterHandler.getValue('linkToHosterMediaFile')
-
-         #try:
-        exec "from " + sHosterFileName + " import cHoster"
-        oHoster = cHoster()
-        oHoster.setUrl(linkToHosterMediaFile)
-        aLink = oHoster.getMediaLink()
-        if (aLink[0] == True):
-            cDownload().download(aLink[1], 'filename')
-            return
-
-        #except:
-        #    logger.fatal('could not load plugin: ' + sHosterFileName)
-
 
 def __createTitleWithLanguage(sLanguage, sTitle):
     sTitle = cUtil().removeHtmlTags(sTitle, '')

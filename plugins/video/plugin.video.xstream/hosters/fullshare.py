@@ -1,12 +1,29 @@
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.parser import cParser
 from resources.lib.gui.gui import cGui
+from hosters.hoster import iHoster
 import time
 import random
 
-class cHoster:
-    def getName(self):
-        return 'Fullshare.net'
+class cHoster(iHoster):
+
+    def __init__(self):
+        self.__sDisplayName = 'FullShare.net'
+
+    def getDisplayName(self):
+        return  self.__sDisplayName
+
+    def setDisplayName(self, sDisplayName):
+        self.__sDisplayName = sDisplayName
+
+    def getPluginIdentifier(self):
+        return 'fullshare'
+
+    def isDownloadable(self):
+        return True
+
+    def isJDownloaderable(self):
+        return True
 
     def getPattern(self):
         return ""
@@ -21,6 +38,9 @@ class cHoster:
         return self.__sUrl
 
     def getMediaLink(self):
+        return self.__getMediaLinkForGuest()
+
+    def __getMediaLinkForGuest(self):
         oRequest = cRequestHandler(self.__sUrl)
         sHtmlContent = oRequest.request()
 

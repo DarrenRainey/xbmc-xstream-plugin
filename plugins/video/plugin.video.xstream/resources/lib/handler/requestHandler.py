@@ -40,6 +40,7 @@ class cRequestHandler:
         return self.__sRealUrl;
 
     def request(self):
+        self.__sUrl = self.__sUrl.replace(' ', '+')
         return self.__callRequest()
 
     def getRequestUri(self):
@@ -62,9 +63,7 @@ class cRequestHandler:
                     self.__sUrl = self.__sUrl + '&' + str(sParameters)
                     sParameters = ''
 
-        #print self.__sUrl
-
-        if (len(sParameters) > 0):            
+        if (len(sParameters) > 0):
             oRequest = urllib2.Request(self.__sUrl, sParameters)
         else:
             oRequest = urllib2.Request(self.__sUrl)
@@ -74,7 +73,7 @@ class cRequestHandler:
                     oRequest.add_header(sHeaderKey, sHeaderValue)
 
 	try:
-		oResponse = urllib2.urlopen(oRequest)
+		oResponse = urllib2.urlopen(oRequest)               
 	except:
 		for aHeader in self.__aHeaderEntries:
                     for sHeaderKey, sHeaderValue in aHeader.items():
@@ -94,5 +93,9 @@ class cRequestHandler:
         
         oResponse.close()
 	return sContent
+
+    def getHeaderLocationUrl(self):        
+        opened = urllib.urlopen(self.__sUrl)
+        return opened.geturl()
 
 

@@ -1,31 +1,27 @@
-from resources.lib.gui.contextElement import cContextElement
 from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
 from resources.lib.handler.inputParameterHandler import cInputParameterHandler
 from resources.lib.parser import cParser
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.gui.gui import cGui
-from resources.lib.player import cPlayer
 from resources.lib.util import cUtil
-from resources.lib.download import cDownload
-import logger
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 
-SITE_NAME = 'kino_de'
+SITE_IDENTIFIER = 'kino_de'
+SITE_NAME = 'Kino.de'
 
 URL_MAIN = 'http://www.kino.de'
 URL_TRAILERS = 'http://www.kino.de/showroom/trailer/film'
-#URL_TRAILERS = 'http://www.kino.de/showroom/trailer/games'
-
 
 
 ENTRIES_PER_PAGE = 30
 
-def load():
-    logger.info('load kino.de :)')
+def load():    
 
     oGui = cGui()
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('showTrailers')
     oGuiElement.setTitle('neuste / beste Trailers')
     oOutputParameterHandler = cOutputParameterHandler()
@@ -33,7 +29,7 @@ def load():
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
        
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('showCharacters')
     oGuiElement.setTitle('Trailers A bis Z')
     oGui.addFolder(oGuiElement)
@@ -70,7 +66,7 @@ def showCharacters():
 
 def __createCharacters(oGui, sCharacter):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('showTrailers')
     oGuiElement.setTitle(sCharacter)
 
@@ -107,7 +103,7 @@ def showTrailers():
         if (aResult[0] == True):
              for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('showTrailerDetails')
                 oGuiElement.setTitle(aEntry[0])
                 oGuiElement.setThumbnail(aEntry[2])
@@ -123,7 +119,7 @@ def showTrailers():
                 iNextPage = int(iPage) + 1
 
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('showTrailers')
                 oGuiElement.setTitle('mehr ..')                
                 oOutputParameterHandler = cOutputParameterHandler()
@@ -144,8 +140,7 @@ def __checkForNextPage(iPage, sHtmlContent):
         if (int(iPage) < int(iLastPage)):
             return True
 
-    return False
-    #<a href='/showroom/trailer/film/A/14'>14</a></span>    <span class="nextLink">
+    return False    
 
 def showTrailerDetails():
     oGui = cGui()
@@ -164,95 +159,13 @@ def showTrailerDetails():
         
         if (aResult[0] == True):
             for aEntry in aResult[1]:
-                oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
-                oGuiElement.setFunction('play')
                 sTitle = cUtil().removeHtmlTags(aEntry[2], '')
-
-                sTitle = oParser.replace('[ ]{2,}', ' ', sTitle)                
-                oGuiElement.setTitle(sTitle)
-                oGuiElement.setThumbnail(aEntry[1])
+                sTitle = oParser.replace('[ ]{2,}', ' ', sTitle)
                 
-               
-                oContextElement = cContextElement()
-                oContextElement.setTitle('Download')
-                oContextElement.setFile(SITE_NAME)
-                oContextElement.setFunction('downloadStreamFile')
-                oOutputParameterHandler = cOutputParameterHandler()
-                oOutputParameterHandler.addParameter('sUrl', sUrl)
-                oOutputParameterHandler.addParameter('sTitle', sTitle)
-                oContextElement.setOutputParameterHandler(oOutputParameterHandler)
-                oGuiElement.addContextItem(oContextElement)
+                oHoster = cHosterHandler().getHoster('kinode')
+                oHoster.setDisplayName(sTitle)
 
-                sUrl = URL_MAIN + str(aEntry[0])
-                oOutputParameterHandler = cOutputParameterHandler()
-                oOutputParameterHandler.addParameter('sUrl', sUrl)
-                oGui.addFolder(oGuiElement, oOutputParameterHandler)
-                
+                sUrl = URL_MAIN + str(aEntry[0])               
+                cHosterGui().showHoster(oGui, oHoster, sUrl)
 
-                
-
-    oGui.setEndOfDirectory()
-
-def __getStreamFile(sUrl):
-    oRequest = cRequestHandler(sUrl)
-    sHtmlContent = oRequest.request()
-    
-    sPattern = 'flashvars.initItemXML = "([^"]+)";'
-    oParser = cParser()
-    aResult = oParser.parse(sHtmlContent, sPattern)
-
-    if (aResult[0] == True):
-        sXmlFile = aResult[1][0]
-        
-        try:
-            oRequest = cRequestHandler(sXmlFile)
-            sHtmlContent = oRequest.request()
-        except:
-            try:
-                oRequest = cRequestHandler(sXmlFile)
-                sHtmlContent = oRequest.request()
-            except:
-                # http error 502 :(
-                return False
-
-        sPattern = '<url>(.*?)</url>'
-        oParser = cParser()
-        aResult = oParser.parse(sHtmlContent, sPattern)
-
-        if (aResult[0] == True):
-            sStreamUrl = aResult[1][0]           
-            logger.info(sStreamUrl)
-            return sStreamUrl
-
-    return False
-
-def downloadStreamFile():
-    oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('sUrl') and oInputParameterHandler.exist('sTitle')):
-        sUrl = oInputParameterHandler.getValue('sUrl')
-        sTitle = oInputParameterHandler.getValue('sTitle')
-
-        sStreamUrl = __getStreamFile(sUrl)
-        if (sStreamUrl != False):
-            cDownload().download(sStreamUrl, sTitle)
-
-def play():
-    oGui = cGui()
-
-    oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('sUrl')):
-        sUrl = oInputParameterHandler.getValue('sUrl')
-
-        sStreamUrl = __getStreamFile(sUrl)
-        if (sStreamUrl != False):
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setMediaUrl(sStreamUrl)
-
-            oPlayer = cPlayer()
-            oPlayer.addItemToPlaylist(oGuiElement)
-            oPlayer.startPlayer()
-            return
-                           
     oGui.setEndOfDirectory()

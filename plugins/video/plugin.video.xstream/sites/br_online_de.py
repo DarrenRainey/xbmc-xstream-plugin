@@ -1,16 +1,15 @@
-import logger
 from resources.lib.gui.gui import cGui
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.handler.inputParameterHandler import cInputParameterHandler
 from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.parser import cParser
-from resources.lib.player import cPlayer
-from resources.lib.util import cUtil
-from resources.lib.gui.contextElement import cContextElement
-from resources.lib.download import cDownload
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 
-SITE_NAME = 'br_online_de'
+SITE_IDENTIFIER = 'br_online_de'
+SITE_NAME = 'Br-Online.de'
+
 URL_MAIN = 'http://www.br-online.de'
 URL_CENTAURI = 'http://www.br-online.de/br-alpha/alpha-centauri/alpha-centauri-harald-lesch-videothek-ID1207836664586.xml'
 URL_DARWIN = 'http://www.br-online.de/br-alpha/charles-darwin/charles-darwin-evolution-videothek-ID1256655423519.xml'
@@ -24,8 +23,6 @@ URL_PHYSIK_EINSTEIN = 'http://www.br-online.de/br-alpha/die-physik-albert-einste
 URL_ELEMENTE = 'http://www.br-online.de/br-alpha/die-4-elemente/die-4-elemente-elemente-harald-lesch-ID1225290580446.xml'
 
 def load():
-    logger.info('load br-online.de :)')
-
     oGui = cGui()
 
     oOutputParameterHandler = cOutputParameterHandler()
@@ -72,7 +69,7 @@ def load():
 
 def __createMenuEntry(oGui, sFunction, sLabel, oOutputParameterHandler = ''):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction(sFunction)
     oGuiElement.setTitle(sLabel)
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
@@ -97,7 +94,7 @@ def showBRonlineVideothekSeasons():
         if (aResult[0] == True):
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
-                oGuiElement.setSiteName(SITE_NAME)
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
                 oGuiElement.setFunction('showBRonlineMovies')
                 oGuiElement.setTitle(aEntry[1])
 
@@ -106,9 +103,6 @@ def showBRonlineVideothekSeasons():
                 oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
-   
-
-
 
 def showBRonlineVideothek():
     oGui = cGui()
@@ -124,7 +118,7 @@ def showBRonlineVideothek():
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('showBRonlineMovies')
             oGuiElement.setThumbnail(URL_MAIN + str(aEntry[1]))
             oGuiElement.setTitle(aEntry[2])
@@ -157,7 +151,7 @@ def __showBRonlineMovies(oGui, sHtmlContent, sPattern):
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('getMovieUrls')
             oGuiElement.setTitle(aEntry[1])
 
@@ -193,41 +187,6 @@ def __getMovieUrls(oGui, sHtmlContent, sPattern, sLabel):
   
     if (aResult[0] == True):
         for aEntry in aResult[1]:
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setFunction('play')
-            oGuiElement.setTitle(sLabel)
-
-            oOutputParameterHandler = cOutputParameterHandler()           
-            oOutputParameterHandler.addParameter('siteUrl', str(aEntry))
-
-            # download context menu
-            oContextElement = cContextElement()
-            oContextElement.setTitle('Download')
-            oContextElement.setFile(SITE_NAME)
-            oContextElement.setFunction('download')
-            oOutputParameterHandlerDownload = cOutputParameterHandler()         
-            oOutputParameterHandlerDownload.addParameter('siteUrl', str(aEntry))
-            oContextElement.setOutputParameterHandler(oOutputParameterHandlerDownload)
-            oGuiElement.addContextItem(oContextElement)
-            oGui.addFolder(oGuiElement, oOutputParameterHandler)
-
-def play():
-    oInputParameterHandler = cInputParameterHandler()
-    sUrl = oInputParameterHandler.getValue('siteUrl')
-
-    oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
-    oGuiElement.setMediaUrl(sUrl)
-
-    oPlayer = cPlayer()
-    oPlayer.addItemToPlaylist(oGuiElement)
-    oPlayer.startPlayer()
-    return
-
-def download():
-    oInputParameterHandler = cInputParameterHandler()
-    sUrl = oInputParameterHandler.getValue('siteUrl')
-    
-    cDownload().download(sUrl, 'filename')
-    return
+            oHoster = cHosterHandler().getHoster('bronline')
+            oHoster.setDisplayName(sLabel)
+            cHosterGui().showHoster(oGui, oHoster, str(aEntry))

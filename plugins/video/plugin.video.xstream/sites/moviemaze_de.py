@@ -5,10 +5,11 @@ from resources.lib.parser import cParser
 from resources.lib.handler.requestHandler import cRequestHandler
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.gui.gui import cGui
-from resources.lib.player import cPlayer
-import logger
+from resources.lib.gui.hoster import cHosterGui
+from resources.lib.handler.hosterHandler import cHosterHandler
 
-SITE_NAME = 'moviemaze_de'
+SITE_IDENTIFIER = 'moviemaze_de'
+SITE_NAME = 'MovieMaze.de'
 
 URL_MAIN = 'http://www.moviemaze.de'
 URL_ARCHIV = 'http://www.moviemaze.de/media/trailer/archiv.phtml'
@@ -18,8 +19,6 @@ URL_TRAILER = 'http://www.moviemaze.de/media/trailer/'
 URL_SEARCH = 'http://www.moviemaze.de/suche/result.phtml'
 
 def load():
-    logger.info('load moviemaze.de :)')
-
     oGui = cGui()
     __createMainMenuItem(oGui, 'Letzte Updates (Alle)', URL_UPDATES_ALL, 'listVideos', 'Letzte Updates')
     __createMainMenuItem(oGui, 'Letzte Updates (HD)', URL_UPDATES_HD, 'listVideos', 'Letzte Updates')
@@ -31,7 +30,7 @@ def load():
 
 def __createMainMenuItem(oGui, sTitle, sUrl, sFunction = '', sHeader = ''):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction(sFunction)
     oGuiElement.setTitle(sTitle)
     oOutputParameterHandler = cOutputParameterHandler()
@@ -68,7 +67,7 @@ def showCharacters():
 
 def __createCharacters(oGui, sCharacter):
     oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
+    oGuiElement.setSiteName(SITE_IDENTIFIER)
     oGuiElement.setFunction('showArchive')
     oGuiElement.setTitle(sCharacter)
 
@@ -98,15 +97,13 @@ def __callSearch(sSearchText):
 
     sPattern = '<tr.+?<a href="([^"]+)"><b style="font-size:9pt;font-weight:bold;">(.*?)<nobr>.+?<a href="([^"]+)">Trailer</a></td>'
 
-    #sPattern = '<a href="([^"]+)">Trailer</a>'
-
     oParser = cParser()
     aResult = oParser.parse(sHtmlContent, sPattern)
     
     if (aResult[0] == True):
         for aEntry in aResult[1]:
             oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
             oGuiElement.setFunction('showTrailerDetails')
 
             sTitle = str(aEntry[1])
@@ -146,7 +143,7 @@ def showArchive():
             if (aResult[0] == True):
                 for aEntry in aResult[1]:
                     oGuiElement = cGuiElement()
-                    oGuiElement.setSiteName(SITE_NAME)
+                    oGuiElement.setSiteName(SITE_IDENTIFIER)
                     oGuiElement.setFunction('showTrailerDetails')
                     oGuiElement.setTitle(aEntry[1])
 
@@ -167,7 +164,7 @@ def listVideos():
 
         oRequest = cRequestHandler(sUrl)
         sHtmlContent = oRequest.request()
-        
+
         sPattern = str(sHeader) + '</h2>.*?</table>'
         oParser = cParser()
         aResult = oParser.parse(sHtmlContent, sPattern)
@@ -181,7 +178,7 @@ def listVideos():
             if (aResult[0] == True):
                 for aEntry in aResult[1]:
                     oGuiElement = cGuiElement()
-                    oGuiElement.setSiteName(SITE_NAME)
+                    oGuiElement.setSiteName(SITE_IDENTIFIER)
                     oGuiElement.setFunction('showTrailerDetails')
                     
                     sTitle = str(aEntry[1]) + ' ' + str(aEntry[2])
@@ -204,6 +201,24 @@ def showTrailerDetails():
        
         oRequest = cRequestHandler(sUrl)
         sHtmlContent = oRequest.request()
+
+        sPattern = 'src="([^"]+?)" width="150".*?</h3></a><span class="standard_justify">(.*?)</span><br /><br />'
+        oParser = cParser()
+        aResult = oParser.parse(sHtmlContent, sPattern)
+        if (aResult[0] == True):
+            for aEntry in aResult[1]:
+                sThumbnail = aEntry[0]
+                sDescription = aEntry[1]
+                sDescription = cUtil().removeHtmlTags(sDescription);
+
+                oGuiElement = cGuiElement()
+                oGuiElement.setSiteName(SITE_IDENTIFIER)
+                oGuiElement.setFunction('dummyFunction')
+                oGuiElement.setTitle('Info')
+                oGuiElement.setThumbnail(URL_MAIN + sThumbnail)
+                oGuiElement.setDescription(sDescription)
+                oGui.addFolder(oGuiElement)
+
 
         sPattern = 'Sprache: de(.*?)</table>'
         oParser = cParser()
@@ -228,17 +243,11 @@ def __createTrailerMenuEntry(oGui, sHtmlContent, sLanguage):
 
     if (aResult[0] == True):
         for aEntry in aResult[1]:
-            oGuiElement = cGuiElement()
-            oGuiElement.setSiteName(SITE_NAME)
-            oGuiElement.setFunction('play')
-
+            oHoster = cHosterHandler().getHoster('moviemaze')
             sTitle = __createTitle(aEntry[1]) + ' (' + sLanguage + ')'
-            oGuiElement.setTitle(sTitle)
-
+            oHoster.setDisplayName(sTitle)
             sUrl = URL_MAIN + str(aEntry[0])
-            oOutputParameterHandler = cOutputParameterHandler()
-            oOutputParameterHandler.addParameter('sUrl', sUrl)
-            oGui.addFolder(oGuiElement, oOutputParameterHandler)
+            cHosterGui().showHoster(oGui, oHoster, sUrl)
 
 def __createTitle(sTitle):    
     iPosition = sTitle.rfind('-')
@@ -247,45 +256,6 @@ def __createTitle(sTitle):
     
     return sTitle[0:iPosition]
 
-def play():
+def dummyFunction():
     oGui = cGui()
-
-    oInputParameterHandler = cInputParameterHandler()
-    if (oInputParameterHandler.exist('sUrl')):
-        sUrl = oInputParameterHandler.getValue('sUrl')
-
-        oRequest = cRequestHandler(sUrl)
-        sHtmlContent = oRequest.request()
-
-        #FLASH
-        sPattern = 's1.addVariable\("file","([^"]+)"\);'
-        oParser = cParser()
-        aResult = oParser.parse(sHtmlContent, sPattern)        
-        if (aResult[0] == True):
-            sFile = aResult[1][0]
-
-            sFile = URL_MAIN + str(sFile)
-            __play(sFile)          
-            return        
-
-        #NO FLASH
-        sPattern = '<PARAM NAME="src" VALUE="([^"]+)"'
-        oParser = cParser()
-        aResult = oParser.parse(sHtmlContent, sPattern)
-               
-        if (aResult[0] == True):
-            sStreamUrl = URL_MAIN + str(aResult[1][0])
-            __play(sStreamUrl)            
-           
-
     oGui.setEndOfDirectory()
-
-def __play(sStreamUrl):   
-    oGuiElement = cGuiElement()
-    oGuiElement.setSiteName(SITE_NAME)
-    oGuiElement.setMediaUrl(sStreamUrl)
-
-    oPlayer = cPlayer()
-    oPlayer.addItemToPlaylist(oGuiElement)
-    oPlayer.startPlayer()
-
