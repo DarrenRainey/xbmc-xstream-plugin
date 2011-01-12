@@ -35,14 +35,14 @@
  * MegaVideo.com
  * MovShare.net
  * MyStream.to
- * NovaMov.com
+ * NovaMov.com
  * Qip.ru
  * QuickLoad.to
  * RadioTime.com
  * Screen4u.net
  * ShareHoster.com
  * SkyLoad.net
- * Stream2k.com
+ * Stream2k.com
  * StreamEsel.com
  * TubeLoad.to
  * VidBux.com
