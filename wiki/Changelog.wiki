@@ -1,26 +1,26 @@
 == CHANGELOG ==
 
 =Version 1.0.1 - 12.01.2011=
-    *fix for xbox version
-    *change settings.xml for xbox version
+    * fix for xbox version
+    * change settings.xml for xbox version
 
 =Version 1.0.0 - 11.01.2011=
-    *add simple host structures
-    *add premiumaccount (megavideo.com, duckload.com)
-    *new settingsdialog
-    *add JDownloader integration
-    *code refactoring
-    *site refactoring
+    * add simple host structures
+    * add premiumaccount (megavideo.com, duckload.com)
+    * new settingsdialog
+    * add JDownloader integration
+    * code refactoring
+    * site refactoring
     
-    *add new sites:
-        *burning-series.org
-        *kinokiste.com
+    * add new sites:
+        * burning-series.org
+        * kinokiste.com
 
-    *add new hosters:
-        *xvidstage.com
-        *filesup.com
-        *filebase.to
-        *ecostream.tv
+    * add new hosters:
+        * xvidstage.com
+        * filesup.com
+        * filebase.to
+        * ecostream.tv
 
 =Version 0.4.5 - 02.01.2011=
     * add site radiotime.com
