@@ -7,21 +7,24 @@ class cPluginHandler:
 
     def getPluginHandle(self):
         try:
-                return int( sys.argv[ 1 ] )
+            return int( sys.argv[ 1 ] )
         except:
-                return 0
+            return 0
 
     def getPluginPath(self):
         try:
-                return sys.argv[0]
+            return sys.argv[0]
         except:
-                return ''
+            return ''
 
     def __getFileNamesFromFolder(self, sFolder):
         aNameList = []
         items = os.listdir(sFolder)
         for sItemName in items:
             sFilePath = os.path.join(sFolder, sItemName)
+            # xbox hack
+            sFilePath = sFilePath.replace('\\', '/')
+            
             if (os.path.isdir(sFilePath) == False):
                 if (str(sFilePath.lower()).endswith('py')):
                     sItemName = sItemName.replace('.py', '')
@@ -38,10 +41,21 @@ class cPluginHandler:
             logger.error("can't import plugin: " + str(sName))            
             return False, False
 
+    def getRootFolder(self):        
+        sRootFolder = os.getcwd()
+        logger.info('root folder: ' + sRootFolder)
+        return sRootFolder
+
     def getAvailablePlugins(self):
         oConfig = cConfig()
 
-        sFolder = os.path.join("special://home/", 'addons', 'plugin.video.xstream', 'sites')
+        sFolder =  self.getRootFolder()
+        sFolder = os.path.join(sFolder, 'sites')
+
+        # xbox hack        
+        sFolder = sFolder.replace('\\', '/')
+        logger.info('sites folder: ' + sFolder)
+        
         aFileNames = self.__getFileNamesFromFolder(sFolder)
 
         aPlugins = []
