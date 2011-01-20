@@ -61,7 +61,7 @@ class cAboutGui:
         oInputParameterHandler = cInputParameterHandler()
         if (oInputParameterHandler.exist('sDate')):
             sDate = oInputParameterHandler.getValue('sDate')
-            sTitle = 'Statistik für den ' + str(sDate)
+            sTitle = 'Statistik fuer den ' + str(sDate)
             self.__createDummyFolder(oGui, sTitle)
 
             oRequest = cRequestHandler(self.URL_MAIN)
