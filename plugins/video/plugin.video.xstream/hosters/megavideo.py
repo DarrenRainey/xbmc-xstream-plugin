@@ -29,12 +29,11 @@ class cHoster(iHoster):
         return ' errortext="(.+?)"'
 
     def setUrl(self, sUrl):
-        sUrl = str(self.__modifyUrl(sUrl))
-        self.__sUrl = sUrl.replace('http://www.megavideo.com/?v=', '')
-        self.__sUrl = sUrl.replace('http://megavideo.com/?v=', '')
+        self.__sUrl = str(self.__modifyUrl(sUrl))
+        self.__sUrl = self.__sUrl.replace('http://www.megavideo.com/?v=', '')
+        self.__sUrl = self.__sUrl.replace('http://megavideo.com/?v=', '')
         self.__sUrl = 'http://www.megavideo.com/?v=' + str(self.__sUrl)
-        print self.__sUrl
-        
+                
     def __modifyUrl(self, sUrl):
         if (sUrl.startswith('http://www.megavideo.com/v/')):
             oRequestHandler = cRequestHandler(sUrl)

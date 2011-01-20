@@ -19,6 +19,9 @@ class cHoster(iHoster):
     def isDownloadable(self):
         return True
 
+    def isJDownloaderable(self):
+        return True
+
     def getPattern(self):
         return '';
 
