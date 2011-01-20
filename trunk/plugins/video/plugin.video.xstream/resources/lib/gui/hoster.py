@@ -38,7 +38,7 @@ class cHosterGui:
 
         oHoster = cHosterHandler().getHoster(sHosterIdentifier)
 
-        #Êplay
+        #play
         self.__showPlayMenu(oGui, sMediaUrl, oHoster, bGetRedirectUrl)
 
         #download
