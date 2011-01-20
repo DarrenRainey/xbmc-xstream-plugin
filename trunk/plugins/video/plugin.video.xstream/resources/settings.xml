@@ -21,6 +21,8 @@
         <setting id="plugin_radiotime_com" type="bool" label="RadioTime.com" default="false"/>
         <setting id="plugin_burning_series_org" type="bool" label="Burning-Series.org" default="false"/>
         <setting id="plugin_kinokiste_com" type="bool" label="KinoKiste.com" default="false"/>
+        <setting id="plugin_anime_proxer_me" type="bool" label="Anime.Proxer.Me" default="false"/>
+        <setting id="plugin_wwitv_com" type="bool" label="WwiTV.com" default="false"/>
     <!--</category>
     <category label="30023">-->
         <setting label="30023" type="lsep"/>

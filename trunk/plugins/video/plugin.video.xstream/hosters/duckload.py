@@ -77,12 +77,25 @@ class cHoster(iHoster):
 
         aHeader = oRequest.getResponseHeader()
         sPhpSessionId = self.__getPhpSessionId(aHeader)
-
-        sPattern = 'id="number">([^<]+)</span>'
+        
+        sPostName = '';
+        sPostValue = '';
+        sPostButtonName = ""
+        sPattern = '<form onsubmit="return checkTimer.*?<input type="hidden" name="([^"]+)" value="([^"]+)".*?<button name="([^"]+)"'
         oParser = cParser()
         aResult = oParser.parse(sHtmlContent, sPattern)
         if (aResult[0] == True):
-                sSecondsForWait = int(aResult[1][0]) + 2
+            for aEntry in aResult[1]:
+                sPostName = aEntry[0]
+                sPostValue = aEntry[1]
+                sPostButtonName = aEntry[2]        
+
+        sPattern = 'var tick.*?=(.*?);'
+        oParser = cParser()
+        aResult = oParser.parse(sHtmlContent, sPattern)
+        if (aResult[0] == True):
+                sTicketValue = str(aResult[1][0]).replace(' ', '');
+                sSecondsForWait = int(sTicketValue) + 2
 
                 oGui = cGui()
                 oGui.showNofication(sSecondsForWait, 3)
@@ -96,23 +109,23 @@ class cHoster(iHoster):
 		ts4 = float(time.time())
 		ts5 = float(time.time())
 
-		sCookieValue = '__utma=' + str(rndY) + '.' + str(rndX) + '.' + str(ts1) + '.' + str(ts2) + '.' + str(ts3) + '; '
-		sCookieValue = sCookieValue + '__utmz=' + str(rndY) + '.' + str(ts4) + '.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); '
-		sCookieValue = sCookieValue + sPhpSessionId +'; '
-		sCookieValue = sCookieValue + '__utmc=' + str(rndY) + "; "
-		sCookieValue = sCookieValue + '__utmb=' + str(rndY) + '.7.10.' +  str(ts5) + "; ADBLOCK=1"
-
+                sCookieValue = sPhpSessionId +'; '
+		sCookieValue = sCookieValue + '__utma=' + str(rndY) + '.' + str(rndX) + '.' + str(ts1) + '.' + str(ts2) + '.' + str(ts3) + '; '
+                sCookieValue = sCookieValue + '__utmb=' + str(rndY) + '.1.10.' + str(ts3) + '; '
+                sCookieValue = sCookieValue + '__utmc=' + str(rndY) + "; "
+                sCookieValue = sCookieValue + '__utmz=' + str(rndY) + '.' + str(ts4) + '.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); '
+                
                 oRequest = cRequestHandler(self.__sUrl)
                 oRequest.setRequestType(cRequestHandler.REQUEST_TYPE_POST)
                 oRequest.addHeaderEntry('Cookie', sCookieValue)
-                oRequest.addParameters('secret', '')
-                oRequest.addParameters('next', 'true')
+                oRequest.addParameters(sPostName, sPostValue)
+                oRequest.addParameters(sPostButtonName, '')
+
 		sHtmlContent = oRequest.request()
 
 		sPattern = '<param name="src" value="([^"]+)"'
                 oParser = cParser()
                 aResult = oParser.parse(sHtmlContent, sPattern)
-
 
                 if (aResult[0] == True):
                     return True, aResult[1][0]

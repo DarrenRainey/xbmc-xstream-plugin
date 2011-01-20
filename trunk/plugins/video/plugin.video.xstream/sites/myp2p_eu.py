@@ -1,3 +1,4 @@
+from resources.lib.util import cUtil
 from resources.lib.handler.inputParameterHandler import cInputParameterHandler
 from resources.lib.config import cConfig
 from resources.lib.handler.outputParameterHandler import cOutputParameterHandler
@@ -13,17 +14,46 @@ SITE_NAME = 'MyP2P.eu'
 
 URL_MAIN = 'http://www.myp2p.eu/'
 URL_COUNTRY_SITE = 'http://www.myp2p.eu/channel.php?&part=channel&sel_country=yes'
+URL_LIVE_TV = 'http://myp2p.eu/channel.php'
 
 def load():
     
     oConfig = cConfig()
     oGui = cGui()
 
+    oOutputParameterHandler = cOutputParameterHandler()
+    __createMenuEntry(oGui, 'showCountrySite', oConfig.getLocalizedString(30402), oOutputParameterHandler)
+
+    oOutputParameterHandler = cOutputParameterHandler()
+    oOutputParameterHandler.addParameter('siteUrl', URL_LIVE_TV)
+    __createMenuEntry(oGui, 'showLiveTvSite', 'Live Tv', oOutputParameterHandler)
+
+    oGui.setEndOfDirectory()
+
+def __createMenuEntry(oGui, sFunction, sLabel, oOutputParameterHandler = ''):
     oGuiElement = cGuiElement()
     oGuiElement.setSiteName(SITE_IDENTIFIER)
-    oGuiElement.setFunction('showCountrySite')
-    oGuiElement.setTitle(oConfig.getLocalizedString(30402))
-    oGui.addFolder(oGuiElement)
+    oGuiElement.setFunction(sFunction)
+    oGuiElement.setTitle(sLabel)
+    oGui.addFolder(oGuiElement, oOutputParameterHandler)
+
+def showLiveTvSite():
+    oGui = cGui()
+    oInputParameterHandler = cInputParameterHandler()
+    sUrl = oInputParameterHandler.getValue('siteUrl')
+
+    oRequestHandler = cRequestHandler(sUrl)
+    sHtmlContent = oRequestHandler.request();
+
+    sPattern = '<td onclick="window.open\(\\\'([^\']+)\\\'\); return false;" style="cursor: pointer; padding-top: 1px; padding-bottom: 1px;">([^"]+)</td>'
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+    
+    if (aResult[0] == True):
+        for aEntry in aResult[1]:
+            oHoster = cHosterHandler().getHoster('myp2p')
+            oHoster.setDisplayName(cUtil().removeHtmlTags(aEntry[1]))
+            cHosterGui().showHoster(oGui, oHoster, aEntry[0])
 
     oGui.setEndOfDirectory()
 
@@ -39,7 +69,6 @@ def showCountrySite():
     # parse content
     oParser = cParser()
     aResult = oParser.parse(sHtmlContent, sPattern)
-
      
     if (aResult[0] == True):
         for aEntry in aResult[1]:
@@ -123,8 +152,6 @@ def parseSubChannels():
         # parse content
         oParser = cParser()
         aResult = oParser.parse(sHtmlContent, sPattern)
-
-        
 
         if (aResult[0] == True):
             for aEntry in aResult[1]:
