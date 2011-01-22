@@ -180,26 +180,52 @@ def __getAvaiableTypes(oGui, sUrl, sHtmlContent, sPattern, sTitle, sNextFunction
 
 def showSeries():    
     oInputParameterHandler = cInputParameterHandler()
+
+    iPage = 1
+    if (oInputParameterHandler.exist('page')):
+	iPage = oInputParameterHandler.getValue('page')
+
     sUrl = oInputParameterHandler.getValue('siteUrl')
     sUrl = sUrl + '&medium=serie'    
-    __parseMediaSite(sUrl)
+    __parseMediaSite(sUrl, iPage)
 
 def showMovies():
     oInputParameterHandler = cInputParameterHandler()
+
+    iPage = 1
+    if (oInputParameterHandler.exist('page')):
+	iPage = oInputParameterHandler.getValue('page')
+
     sUrl = oInputParameterHandler.getValue('siteUrl')
     sUrl = sUrl + '&medium=movie'    
-    __parseMediaSite(sUrl)
+    __parseMediaSite(sUrl, iPage)
 
 def showOvas():
     oInputParameterHandler = cInputParameterHandler()
+
+    iPage = 1
+    if (oInputParameterHandler.exist('page')):
+	iPage = oInputParameterHandler.getValue('page')
+
     sUrl = oInputParameterHandler.getValue('siteUrl')
     sUrl = sUrl + '&medium=ova'    
-    __parseMediaSite(sUrl)
+    __parseMediaSite(sUrl, iPage)
 
-def __parseMediaSite(sUrl):
+def showNextPage():
+    oInputParameterHandler = cInputParameterHandler()
+    sUrl = oInputParameterHandler.getValue('siteUrl')
+    iPage = 1
+    if (oInputParameterHandler.exist('page')):
+	iPage = oInputParameterHandler.getValue('page')
+
+    __parseMediaSite(sUrl, iPage)
+
+def __parseMediaSite(sUrl, iPage):
+    sCurrentUrl = sUrl + '&page=' + str(iPage)
+    
     oGui = cGui()
-    oRequestHandler = cRequestHandler(sUrl)
-    sHtmlContent = oRequestHandler.request();
+    oRequestHandler = cRequestHandler(sCurrentUrl)
+    sHtmlContent = oRequestHandler.request()
 
     sPattern = 'id="box-table-a"(.*?)</table>'  
 
@@ -212,11 +238,11 @@ def __parseMediaSite(sUrl):
         aResult = oParser.parse(sHtmlContent, sPattern)        
 
     if (aResult[0] == True):
-        sHtmlContent = aResult[1][0]
+        sHtmlContent2 = aResult[1][0]
 
         sPattern = '</tr><tr><td>(.*?)</td><td align=left>(.*?)</td>'
         oParser = cParser()
-        aResult = oParser.parse(sHtmlContent, sPattern)
+        aResult = oParser.parse(sHtmlContent2, sPattern)
         
         if (aResult[0] == True):
             for aEntry in aResult[1]:
@@ -228,11 +254,34 @@ def __parseMediaSite(sUrl):
                 oGuiElement.setTitle(sTitle)
 
                 oOutputParameterHandler = cOutputParameterHandler()
-                oOutputParameterHandler.addParameter('siteUrl', sUrl)
+                oOutputParameterHandler.addParameter('siteUrl', sCurrentUrl)
                 oOutputParameterHandler.addParameter('number', str(aEntry[0]))
                 oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
+	if (__checkFoxNextSite(iPage, sHtmlContent) == True):
+	    oGuiElement = cGuiElement()
+            oGuiElement.setSiteName(SITE_IDENTIFIER)
+            oGuiElement.setFunction('showNextPage')
+	    oGuiElement.setTitle('next ..')
+	    oOutputParameterHandler = cOutputParameterHandler()
+	    oOutputParameterHandler.addParameter('siteUrl', sUrl)
+	    oOutputParameterHandler.addParameter('page', str(int(iPage) + 1))
+	    oGui.addFolder(oGuiElement, oOutputParameterHandler)
+	    
+
     oGui.setEndOfDirectory()
+
+def __checkFoxNextSite(iCurrentPage, sHtmlContent):
+    iNextSite = int(iCurrentPage) + 1;
+    sPattern = 'page=' + str(iNextSite) + '.*?>'
+
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+
+    if (aResult[0] == True):
+	return True
+
+    return False;
 
 def showHoster():
     oGui = cGui()
