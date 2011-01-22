@@ -1,5 +1,11 @@
 == CHANGELOG ==
 
+= Version 1.1.1 - 22.01.2011=
+    * fix kino.to news
+    * add "next" function to site anime.proxer.me
+
+    * add OpenELEC support
+
 = Version 1.1.0 - 20.01.2011=
     * add series to iload.to
     * add language info to iload.to
