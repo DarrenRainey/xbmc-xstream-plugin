@@ -306,7 +306,8 @@ def parseNews():
     if (aResult[0] == True):
         sHtmlContent = aResult[1][0]
 
-        sPattern = '<td class="Icon"><img src="http://res.kino.to/gr/sys/lng/([^"]+).png" alt="language" width="16" height="11".*?<td class="Title">.*?"([^"]+)" class="OverlayLabel">(.*?)</td>'
+        #sPattern = '<td class="Icon"><img src="http://res.kino.to/gr/sys/lng/([^"]+).png" alt="language" width="16" height="11".*?<td class="Title">.*?"([^"]+)" class="OverlayLabel">(.*?)</td>'
+	sPattern = '<td class="Icon"><img src="http://res.kino.to/gr/sys/lng/([^"]+).png" alt="language" width="16" height="11".*?<td class="Title">.*?href ="([^"]+)".*?class="OverlayLabel">(.*?)</td>'
 
         # parse content
         oParser = cParser()
