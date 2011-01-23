@@ -155,9 +155,10 @@ def parseMovie():
     oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('movieUrl')):
         sSiteUrl = oInputParameterHandler.getValue('movieUrl')
-        
+	        
         oRequest = cRequestHandler(sSiteUrl)
         sHtmlContent = oRequest.request()
+	sTitle = __getMovieTitle(sHtmlContent)
 
         __createInfo(oGui, sHtmlContent)
 
@@ -178,9 +179,22 @@ def parseMovie():
         for aHoster in aHosters:
             if (len(aHoster) > 0):                
                 oHoster = aHoster[0];
+		if (sTitle != False):
+		    oHoster.setFileName(sTitle)
+
                 cHosterGui().showHoster(oGui, oHoster, str(aHoster[1]), True)              
         
     oGui.setEndOfDirectory()
+
+def __getMovieTitle(sHtmlContent):
+    sPattern = '<strong><h2>(.*?)</strong></h2>'
+
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+    if (aResult[0] == True):
+	return aResult[1][0]
+
+    return False;
 
 def __parseHosterByPattern(aHosters, sHtmlContent, sHosterIdentifier, sPattern):
     sPattern = '<div style="display: none;" id="ame_noshow_post_.*?' + sPattern

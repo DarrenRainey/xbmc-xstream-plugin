@@ -166,6 +166,7 @@ def parseMovieFromSite():
                         oHoster = cHosterHandler().getHoster('southpark')
                         sTitle = oConfig.getLocalizedString(30306) % (str(iDuration), str(iEndDuration))
                         oHoster.setDisplayName(sTitle)
+			oHoster.setFileName(sTitle)
                         cHosterGui().showHoster(oGui, oHoster, sPartUrl)
                      
                         iDuration = iEndDuration
@@ -190,6 +191,7 @@ def playAllMovieParts():
         aParts = eval(sParts)
 
         oPlayer = cPlayer()
+	oPlayer.clearPlayList()
         for sPartUrl in aParts:
             oHoster = cHosterHandler().getHoster('southpark')
             oHoster.setUrl(sPartUrl)

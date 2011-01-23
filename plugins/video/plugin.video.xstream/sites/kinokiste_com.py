@@ -80,10 +80,12 @@ def __showMovieEntries(sSiteUrl, iPage = False):
             oGuiElement.setFunction('showHosters')
             oGuiElement.setThumbnail(URL_MAIN + str(aEntry[1]))
             oGuiElement.setDescription(str(aEntry[2]))
-            oGuiElement.setTitle(cUtil().removeHtmlTags(str(aEntry[3])))
+	    sTitle = cUtil().removeHtmlTags(str(aEntry[3]))
+            oGuiElement.setTitle(sTitle)
 
             oOutputParameterHandler = cOutputParameterHandler()
             oOutputParameterHandler.addParameter('siteUrl', URL_MAIN + str(aEntry[0]))
+	    oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
             oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     if (iPage != False):
@@ -137,11 +139,13 @@ def showAllMovies():
             for aEntry in aResult[1]:
                 oGuiElement = cGuiElement()
                 oGuiElement.setSiteName(SITE_IDENTIFIER)
-                oGuiElement.setFunction('showHosters')               
-                oGuiElement.setTitle(cUtil().removeHtmlTags(str(aEntry[1])))
+                oGuiElement.setFunction('showHosters')
+		sTitle = cUtil().removeHtmlTags(str(aEntry[1]))
+                oGuiElement.setTitle(sTitle)
 
                 oOutputParameterHandler = cOutputParameterHandler()
                 oOutputParameterHandler.addParameter('siteUrl', URL_MAIN + str(aEntry[0]))
+		oOutputParameterHandler.addParameter('sMovieTitle', sTitle)
                 oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
@@ -200,6 +204,7 @@ def showHosters():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
     sUrl = oInputParameterHandler.getValue('siteUrl')
+    sMovieTitle = oInputParameterHandler.getValue('sMovieTitle')
 
     oRequestHandler = cRequestHandler(sUrl)
     sHtmlContent = oRequestHandler.request();
@@ -227,6 +232,7 @@ def showHosters():
                     oOutputParameterHandler = cOutputParameterHandler()
                     oOutputParameterHandler.addParameter('siteUrl', URL_MAIN + str(aEntry[0]))
                     oOutputParameterHandler.addParameter('hosterName', oHoster.getPluginIdentifier())
+		    oOutputParameterHandler.addParameter('sMovieTitle', sMovieTitle)
                     oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
@@ -236,6 +242,7 @@ def getHosterUrlandPlay():
     oInputParameterHandler = cInputParameterHandler()
     sUrl = oInputParameterHandler.getValue('siteUrl')
     sHoster = oInputParameterHandler.getValue('hosterName')
+    sMovieTitle = oInputParameterHandler.getValue('sMovieTitle')
 
     oRequestHandler = cRequestHandler(sUrl)
     sHtmlContent = oRequestHandler.request();
@@ -249,6 +256,7 @@ def getHosterUrlandPlay():
         sStreamUrl = str(sStreamUrl).replace('"', '').replace("'", '')
     
         oHoster = cHosterHandler().getHoster(sHoster)
+	oHoster.setFileName(sMovieTitle)
         cHosterGui().showHoster(oGui, oHoster, sStreamUrl)
         oGui.setEndOfDirectory()
         return

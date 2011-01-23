@@ -11,12 +11,12 @@ from resources.lib.handler.hosterHandler import cHosterHandler
 SITE_IDENTIFIER = 'iload_to'
 SITE_NAME = 'ILoad.to'
 
-URL_MAIN = 'http://iload.to'
-URL_MOVIE_PAGE = 'http://iload.to/category/1-Filme/'
-URL_CHARACTERS = 'http://iload.to/category/1-Filme/letter'
-URL_SERIE_CHARACTERS = 'http://iload.to/category/6-Serien/letter'
-URL_SEARCH = 'http://iload.to/ajax/module/category/1-Filme/search/'
-URL_SEARCH_SERIES = 'http://iload.to/ajax/module/category/6-Serien/search/'
+URL_MAIN = 'http://iload.to/de/'
+URL_MOVIE_PAGE = URL_MAIN + 'category/1-Filme/'
+URL_CHARACTERS = URL_MAIN + 'category/1-Filme/letter'
+URL_SERIE_CHARACTERS = URL_MAIN + 'category/6-Serien/letter'
+URL_SEARCH = URL_MAIN + 'ajax/module/category/1-Filme/search/'
+URL_SEARCH_SERIES = URL_MAIN + 'ajax/module/category/6-Serien/search/'
 
 COOKIE_SECURITY_NAME = 'suilid'
 
@@ -63,10 +63,14 @@ def load():
 
 def __getSecurityCookieValue():
     oRequestHandler = cRequestHandler(URL_MAIN)
+    oRequestHandler.setRequestType(cRequestHandler.REQUEST_TYPE_POST)
     oRequestHandler.request();
-    aHeader = oRequestHandler.getResponseHeader()
+    aHeader = oRequestHandler.getResponseHeader()    
     sReponseCookie = aHeader.getheader("Set-Cookie")
-
+    
+    if (sReponseCookie == None):
+	return ''
+    
     sPattern = COOKIE_SECURITY_NAME + '=([^;]+);'
     oParser = cParser()
     aResult = oParser.parse(sReponseCookie, sPattern)
@@ -386,12 +390,12 @@ def showCinemaMovies():
     oGui = cGui()
 
     oInputParameterHandler = cInputParameterHandler()
-    sUrl = oInputParameterHandler.getValue('siteUrl')
+    sUrl = oInputParameterHandler.getValue('siteUrl')    
     sSecurity = oInputParameterHandler.getValue('security')
 
     oRequestHandler = cRequestHandler(sUrl)
     oRequestHandler.addHeaderEntry('Cookie', sSecurity)
-    sHtmlContent = oRequestHandler.request();
+    sHtmlContent = oRequestHandler.request();    
 
     sPattern = '<div class="toptitle-slider-content"(.*?)</div>'
     oParser = cParser()
@@ -566,6 +570,7 @@ def __parseHosters(sFormat, oGui, sHtmlContent):
             if (oHoster != False):
                 sTitle = str(sFormat) + ' - ' + str(aEntry[0]) + ' - ' + str(aEntry[1])
                 oHoster.setDisplayName(sTitle)
+		oHoster.setFileName(sTitle)
                 cHosterGui().showHoster(oGui, oHoster, str(aEntry[2]))                
 
 

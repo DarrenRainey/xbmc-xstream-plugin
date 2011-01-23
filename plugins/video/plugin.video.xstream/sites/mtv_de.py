@@ -250,5 +250,6 @@ def __calculateNextPage(iCount, iCurrentStart):
 
 def __showHoster(oGui, sTitle, sUrl):
     oHoster = cHosterHandler().getHoster('mtv')
-    oHoster.setDisplayName(sTitle)    
+    oHoster.setDisplayName(sTitle)
+    oHoster.setFileName(sTitle)
     cHosterGui().showHoster(oGui, oHoster, sUrl)

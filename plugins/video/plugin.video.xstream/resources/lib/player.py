@@ -6,9 +6,7 @@ from resources.lib.gui.gui import cGui
 import xbmc
 
 class cPlayer:
-    def __init__(self):
-        self.clearPlayList()
-
+    
     def clearPlayList(self):
         oPlaylist = self.__getPlayList()
 	oPlaylist.clear()
@@ -19,8 +17,8 @@ class cPlayer:
     def addItemToPlaylist(self, oGuiElement):
         oGui = cGui()
         oListItem =  oGui.createListItem(oGuiElement)
-        self.__addItemToPlaylist(oGuiElement, oListItem)    
-
+        self.__addItemToPlaylist(oGuiElement, oListItem)
+	
     def __addItemToPlaylist(self, oGuiElement, oListItem):    
 	oPlaylist = self.__getPlayList()	
 	oPlaylist.add(oGuiElement.getMediaUrl(), oListItem )

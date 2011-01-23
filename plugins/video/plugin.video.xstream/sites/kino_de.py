@@ -164,6 +164,7 @@ def showTrailerDetails():
                 
                 oHoster = cHosterHandler().getHoster('kinode')
                 oHoster.setDisplayName(sTitle)
+		oHoster.setFileName(sTitle)
 
                 sUrl = URL_MAIN + str(aEntry[0])               
                 cHosterGui().showHoster(oGui, oHoster, sUrl)

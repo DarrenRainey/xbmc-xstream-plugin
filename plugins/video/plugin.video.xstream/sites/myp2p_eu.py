@@ -53,6 +53,7 @@ def showLiveTvSite():
         for aEntry in aResult[1]:
             oHoster = cHosterHandler().getHoster('myp2p')
             oHoster.setDisplayName(cUtil().removeHtmlTags(aEntry[1]))
+	    oHoster.setFileName(cUtil().removeHtmlTags(aEntry[1]))
             cHosterGui().showHoster(oGui, oHoster, aEntry[0])
 
     oGui.setEndOfDirectory()
@@ -165,6 +166,7 @@ def parseSubChannels():
                     for aEntry in aResult[1]:
                         oHoster = cHosterHandler().getHoster('myp2p')
                         oHoster.setDisplayName(aEntry[1])
+			oHoster.setFileName(str(aEntry[1]))
                         cHosterGui().showHoster(oGui, oHoster, aEntry[0])
 
     oGui.setEndOfDirectory()

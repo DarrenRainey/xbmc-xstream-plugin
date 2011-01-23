@@ -7,6 +7,12 @@ class iHoster:
     def setDisplayName(self, sDisplayName):
         raise NotImplementedError()
 
+    def setFileName(self, sFileName):
+	raise NotImplementedError()
+
+    def getFileName(self):
+	raise NotImplementedError()
+
     def getPluginIdentifier(self):
         raise NotImplementedError()
 

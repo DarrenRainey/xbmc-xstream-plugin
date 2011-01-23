@@ -246,6 +246,7 @@ def __createTrailerMenuEntry(oGui, sHtmlContent, sLanguage):
             oHoster = cHosterHandler().getHoster('moviemaze')
             sTitle = __createTitle(aEntry[1]) + ' (' + sLanguage + ')'
             oHoster.setDisplayName(sTitle)
+	    oHoster.setFileName(sTitle)
             sUrl = URL_MAIN + str(aEntry[0])
             cHosterGui().showHoster(oGui, oHoster, sUrl)
 

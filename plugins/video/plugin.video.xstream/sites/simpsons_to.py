@@ -154,6 +154,7 @@ def showHoster():
                 if (oHoster != False):
                     sPlayerId = __getPlayerId(aEntry[1])
                     sUrl = URL_PLAYER + str(sPlayerId)
+		    oHoster.setFileName(sMovieTitle)
                     cHosterGui().showHoster(oGui, oHoster, sUrl, True)
 
     oGui.setEndOfDirectory()

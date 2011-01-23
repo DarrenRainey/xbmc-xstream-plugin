@@ -1,3 +1,4 @@
+from resources.lib.util import cUtil
 from resources.lib.gui.gui import cGui
 from resources.lib.gui.guiElement import cGuiElement
 from resources.lib.handler.inputParameterHandler import cInputParameterHandler
@@ -167,21 +168,32 @@ def getMovieUrls():
     oRequestHandler = cRequestHandler(sUrl)
     sHtmlContent = oRequestHandler.request();
 
+    sTitle = __getMovieTitle(sHtmlContent)
+
     sPattern = "player.avaible_url\['microsoftmedia'\]\['1'\] = \"([^\"]+)\""
-    __getMovieUrls(oGui, sHtmlContent, sPattern, 'WMV - low Quality')
+    __getMovieUrls(oGui, sHtmlContent, sPattern, 'WMV - low Quality', sTitle)
 
     sPattern = "player.avaible_url\['microsoftmedia'\]\['2'\] = \"(.*?)\""
-    __getMovieUrls(oGui, sHtmlContent, sPattern, 'WMV - high Quality')
+    __getMovieUrls(oGui, sHtmlContent, sPattern, 'WMV - high Quality', sTitle)
 
     sPattern = "player.avaible_url\['flashmedia'\]\['1'\] = \"(.*?)\""
-    __getMovieUrls(oGui, sHtmlContent, sPattern, 'FLASH - low Quality')
+    __getMovieUrls(oGui, sHtmlContent, sPattern, 'FLASH - low Quality', sTitle)
 
     sPattern = "player.avaible_url\['flashmedia'\]\['2'\] = \"(.*?)\""
-    __getMovieUrls(oGui, sHtmlContent, sPattern, 'FLASH - high Quality')
+    __getMovieUrls(oGui, sHtmlContent, sPattern, 'FLASH - high Quality', sTitle)
 
     oGui.setEndOfDirectory()
 
-def __getMovieUrls(oGui, sHtmlContent, sPattern, sLabel):
+def __getMovieTitle(sHtmlContent):
+    sPattern = '<div class="videoText"><p><strong>(.*?)<span>'
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+    if (aResult[0] == True):
+	return cUtil().removeHtmlTags(str(aResult[1][0]))
+
+    return False
+
+def __getMovieUrls(oGui, sHtmlContent, sPattern, sLabel, sTitle):
     oParser = cParser()
     aResult = oParser.parse(sHtmlContent, sPattern)
   
@@ -189,4 +201,6 @@ def __getMovieUrls(oGui, sHtmlContent, sPattern, sLabel):
         for aEntry in aResult[1]:
             oHoster = cHosterHandler().getHoster('bronline')
             oHoster.setDisplayName(sLabel)
+	    if (sTitle != False):
+		oHoster.setFileName(sTitle)
             cHosterGui().showHoster(oGui, oHoster, str(aEntry))

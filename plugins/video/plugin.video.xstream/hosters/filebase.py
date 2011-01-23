@@ -8,12 +8,19 @@ class cHoster(iHoster):
 
     def __init__(self):
         self.__sDisplayName = 'FileBase.to'
+	self.__sFileName = self.__sDisplayName
 
     def getDisplayName(self):
         return  self.__sDisplayName
 
     def setDisplayName(self, sDisplayName):
         self.__sDisplayName = sDisplayName
+
+    def setFileName(self, sFileName):
+	self.__sFileName = sFileName
+
+    def getFileName(self):
+	return self.__sFileName
 
     def getPluginIdentifier(self):
         return 'filebase'
