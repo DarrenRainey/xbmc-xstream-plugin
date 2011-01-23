@@ -27,16 +27,6 @@ def __createMenuEntry(oGui, sFunction, sLabel, sUrl):
     oOutputParameterHandler.addParameter('siteUrl', sUrl)
     oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
-def showSearch():
-    oGui = cGui()
-
-    sSearchText = oGui.showKeyBoard()
-    if (sSearchText != False):       
-        __search(sSearchText)
-        return
-
-    oGui.setEndOfDirectory()
-
 def showAllSeries():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
@@ -131,9 +121,9 @@ def showHosters():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
     sUrl = oInputParameterHandler.getValue('siteUrl')
-
+    
     oRequestHandler = cRequestHandler(sUrl)
-    sHtmlContent = oRequestHandler.request();
+    sHtmlContent = oRequestHandler.request();    
 
     sPattern = '<h3>Hoster dieser Episode(.*?)</ul>'
     oParser = cParser()
@@ -160,14 +150,27 @@ def showHosters():
 
     oGui.setEndOfDirectory()
 
+def __getMovieTitle(sHtmlContent):
+    sPattern = '</ul><h2>(.*?)<small id="titleEnglish" lang="en">(.*?)</small>'
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+    
+    if (aResult[0] == True):
+	for aEntry in aResult[1]:
+	    return str(aEntry[0]).strip() + ' - ' + str(aEntry[1]).strip()
+
+    return False
+
 def getHosterUrlandPlay():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
     sUrl = oInputParameterHandler.getValue('siteUrl')
     sHoster = oInputParameterHandler.getValue('hosterName')
-
+   
     oRequestHandler = cRequestHandler(sUrl)
     sHtmlContent = oRequestHandler.request();
+    
+    sTitle = __getMovieTitle(sHtmlContent)
 
     sPattern = '<div id="video_actions">.*?<a href="([^"]+)">'
     oParser = cParser()
@@ -176,6 +179,9 @@ def getHosterUrlandPlay():
         sStreamUrl = aResult[1][0]
 
         oHoster = cHosterHandler().getHoster(sHoster)
+	if (sTitle != False):
+	    oHoster.setFileName(sTitle)
+
         cHosterGui().showHoster(oGui, oHoster, sStreamUrl)
         oGui.setEndOfDirectory()
         return

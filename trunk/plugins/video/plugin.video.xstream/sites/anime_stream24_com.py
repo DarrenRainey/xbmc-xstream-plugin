@@ -59,6 +59,7 @@ def showCurrentMovies():
 
                 oOutputParameterHandler = cOutputParameterHandler()
                 oOutputParameterHandler.addParameter('siteUrl', str(aEntry[0]))
+		oOutputParameterHandler.addParameter('sMovieTitle', str(aEntry[1]))
                 oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     oGui.setEndOfDirectory()
@@ -118,6 +119,7 @@ def showMovieTitles():
 
             oOutputParameterHandler = cOutputParameterHandler()
             oOutputParameterHandler.addParameter('siteUrl', str(aEntry[0]))
+	    oOutputParameterHandler.addParameter('sMovieTitle', str(aEntry[1]))
             oGui.addFolder(oGuiElement, oOutputParameterHandler)
 
     sNextPage = __checkForNextPage(sHtmlContent)
@@ -146,6 +148,7 @@ def showHosters():
     oGui = cGui()
     oInputParameterHandler = cInputParameterHandler()
     sUrl = oInputParameterHandler.getValue('siteUrl')
+    sMovieTitle = oInputParameterHandler.getValue('sMovieTitle')
 
     oRequestHandler = cRequestHandler(sUrl)
     sHtmlContent = oRequestHandler.request();
@@ -167,6 +170,7 @@ def showHosters():
                 
                 oHoster = __checkHoster(sHosterUrl)               
                 if (oHoster != False):
+		    oHoster.setFileName(sMovieTitle)
                     cHosterGui().showHoster(oGui, oHoster, sHosterUrl)
 
     oGui.setEndOfDirectory()

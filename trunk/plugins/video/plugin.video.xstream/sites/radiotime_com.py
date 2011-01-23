@@ -176,6 +176,7 @@ def showStreams():
             oHoster = cHosterHandler().getHoster('radiotime')
             sTitle = 'Format: ' + str(aEntry[2]) + ' - Quality: ' + str(aEntry[1])
             oHoster.setDisplayName(sTitle)
+	    oHoster.setFileName(sTitle)
             cHosterGui().showHoster(oGui, oHoster, str(aEntry[0]))
 
     oGui.setEndOfDirectory()

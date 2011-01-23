@@ -93,6 +93,7 @@ def listVideos():
 def __showHoster(oGui, sTitle, sUrl):
     oHoster = cHosterHandler().getHoster('nba')
     oHoster.setDisplayName(sTitle)
+    oHoster.setFileName(sTitle)
     cHosterGui().showHoster(oGui, oHoster, sUrl)
 
 def __createVideoUrl(sThumbnailUrl, sVideoId):

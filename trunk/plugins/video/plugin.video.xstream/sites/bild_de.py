@@ -64,6 +64,7 @@ def listVideos():
             for aEntry in aResult[1]:
                 oHoster = cHosterHandler().getHoster('bild')
                 oHoster.setDisplayName(aEntry[2])
+		oHoster.setFileName(aEntry[2])
 
                 sRandom = random.random()              
 	        sMilli = str(time.time()).split('.')[1]

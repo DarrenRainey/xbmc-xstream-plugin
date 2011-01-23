@@ -360,81 +360,93 @@ def __checkHoster(sHoster):
 
     return False
 
+def __getMovieTitle(sHtmlContent):
+    sPattern = '<h1 style="font-size:18px;">(.*?)<img'
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+
+    if (aResult[0] == True):
+	return str(aResult[1][0]).strip()
+
+    return False
+
 def parseHoster():
     oGui = cGui()
 
     oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('sUrl') and oInputParameterHandler.exist('sHoster')):
         sUrl = oInputParameterHandler.getValue('sUrl')
-        
+	        
         oRequest = cRequestHandler(sUrl)
         sHtmlContent = oRequest.request()
 
-        bFoundHoster = __getHosterFile(oGui, 'mystream', 'http://www.mystream.to/', '<a href="http://www.mystream.to/([^"]+)"', sHtmlContent)
+	sMovieTitle = __getMovieTitle(sHtmlContent)
+
+        bFoundHoster = __getHosterFile(oGui, 'mystream', 'http://www.mystream.to/', '<a href="http://www.mystream.to/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'loadedit', 'http://loaded.it/', '<a href="http://loaded.it/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'loadedit', 'http://loaded.it/', '<a href="http://loaded.it/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'novamov', 'http://www.novamov.com/', "src='http://www.novamov.com/([^']+)'", sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'novamov', 'http://www.novamov.com/', "src='http://www.novamov.com/([^']+)'", sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'stream2k', 'http://www.stream2k.com/', '<param name="flashvars" value="config=.*?stream2k.com/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'stream2k', 'http://www.stream2k.com/', '<param name="flashvars" value="config=.*?stream2k.com/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'videoweed', 'http://www.videoweed.com/', 'src="http://www.videoweed.com/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'videoweed', 'http://www.videoweed.com/', 'src="http://www.videoweed.com/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'streamesel', 'http://www.streamesel.com/', '<a href="http://www.streamesel.com/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'streamesel', 'http://www.streamesel.com/', '<a href="http://www.streamesel.com/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'megavideo', False, 'value="http://www.megavideo.com/v/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'megavideo', False, 'value="http://www.megavideo.com/v/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'duckload', 'http://www.duckload.com/', '<a href="http://duckload.com/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'duckload', 'http://www.duckload.com/', '<a href="http://duckload.com/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'duckload', 'http://www.duckload.com/', '<a href="http://www.duckload.com/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'duckload', 'http://www.duckload.com/', '<a href="http://www.duckload.com/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'movshare', 'http://www.movshare.net/', 'src="http://www.movshare.net/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'movshare', 'http://www.movshare.net/', 'src="http://www.movshare.net/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'movshare', 'http://www.movshare.net/', 'src="http://movshare.net/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'movshare', 'http://www.movshare.net/', 'src="http://movshare.net/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'filestage', 'http://www.filestage.to/', '<a href="http://www.filestage.to/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'filestage', 'http://www.filestage.to/', '<a href="http://www.filestage.to/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'tubeload', 'http://www.tubeload.to/', '<a href="http://www.tubeload.to/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'tubeload', 'http://www.tubeload.to/', '<a href="http://www.tubeload.to/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'screen4u', 'http://www.screen4u.net/', '<a href="http://www.screen4u.net/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'screen4u', 'http://www.screen4u.net/', '<a href="http://www.screen4u.net/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'checkthisvid', 'http://www.checkthisvid.com/', '<a href="http://www.checkthisvid.com/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'checkthisvid', 'http://www.checkthisvid.com/', '<a href="http://www.checkthisvid.com/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
              
-        bFoundHoster = __getHosterFile(oGui, 'xvidstage', 'http://xvidstage.com/', '<a href="http://xvidstage.com/([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'xvidstage', 'http://xvidstage.com/', '<a href="http://xvidstage.com/([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
-        bFoundHoster = __getHosterFile(oGui, 'filezup', 'http://www.filezup.com', '<a href="http://www.filezup.com([^"]+)"', sHtmlContent)
+        bFoundHoster = __getHosterFile(oGui, 'filezup', 'http://www.filezup.com', '<a href="http://www.filezup.com([^"]+)"', sHtmlContent, sMovieTitle)
         if (bFoundHoster == True):
             return
 
@@ -461,7 +473,7 @@ def parseHoster():
                 __play('loombo', sStreamUrl, sTitle, bDownload)
                 return'''
 
-def __getHosterFile(oGui, sHoster, sUrl, sPattern, sHtmlContent ):
+def __getHosterFile(oGui, sHoster, sUrl, sPattern, sHtmlContent, sMovieTitle):
     oParser = cParser()
     aResult = oParser.parse(sHtmlContent, sPattern)
     
@@ -472,6 +484,8 @@ def __getHosterFile(oGui, sHoster, sUrl, sPattern, sHtmlContent ):
             sStreamUrl = sUrl + aResult[1][0]
 
         oHoster = cHosterHandler().getHoster(sHoster)
+	if (sMovieTitle != False):
+	    oHoster.setFileName(sMovieTitle)
         cHosterGui().showHoster(oGui, oHoster, sStreamUrl)
         oGui.setEndOfDirectory()
         return True

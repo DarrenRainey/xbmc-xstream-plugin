@@ -31,6 +31,7 @@ class cStatistic:
             sUtmccValue = '__utma=' + str(rndY) + '.' + str(rndX) + '.' + str(ts1) + '.' + str(ts2) + '.' + str(ts3) + '; '
             sUtmccValue = sUtmccValue + '+__utmz=' + str(rndY) + '.' + str(ts4) + '.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); '
             oRequestHandler.addParameters('utmcc', sUtmccValue)
+	    #oRequestHandler.addParameters('aip', '1') # anonymizeIp
 
             oRequestHandler.addParameters('utmcs', 'UTF-8')
             oRequestHandler.addParameters('utmdt', 'Plugin Activity')

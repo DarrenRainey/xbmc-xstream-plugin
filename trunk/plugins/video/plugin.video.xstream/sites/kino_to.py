@@ -452,12 +452,14 @@ def parseMovieEntrySite():
     oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('movieUrl')):
         sUrl = oInputParameterHandler.getValue('movieUrl')
-
+	
         # get movieEntrySite content
         oRequest = cRequestHandler(sUrl)
         oRequest.addHeaderEntry('Cookie', sSecurityValue)
         oRequest.addHeaderEntry('Referer', 'http://kino.to/')
         sHtmlContent = oRequest.request()
+
+	sMovieTitle = __createMovieTitle(sHtmlContent)
 
         bIsSerie = __isSerie(sHtmlContent)
         if (bIsSerie):
@@ -474,12 +476,26 @@ def parseMovieEntrySite():
                     oOutputParameterHandler = cOutputParameterHandler()
                     oOutputParameterHandler.addParameter('sUrl', aSeriesItem[1])
                     oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+		    oOutputParameterHandler.addParameter('sMovieTitle', sMovieTitle)
                     oGui.addFolder(oGuiElement, oOutputParameterHandler)
         else:
-            displayHoster(sHtmlContent)
+            displayHoster(sHtmlContent, sMovieTitle)
 
 
     oGui.setEndOfDirectory()
+
+def __createMovieTitle(sHtmlContent):
+    sPattern = '<h1><span style="display: inline-block">(.*?)</h1>'
+    oParser = cParser()
+    aResult = oParser.parse(sHtmlContent, sPattern)
+        
+    if (aResult[0] == True):
+	sTitle = cUtil().removeHtmlTags(str(aResult[1][0]))
+	return sTitle
+    
+    return False
+
+    #http://kino.to/aGET/Mirror/Love_and_Other_Drugs-Nebenwirkungen_inklusive&Hoster=2&Mirror=1
 
 def __createInfoItem(oGui, sHtmlContent):
     sThumbnail = __getThumbnail(sHtmlContent)
@@ -506,11 +522,13 @@ def dummyFolder():
     oGui = cGui()    
     oGui.setEndOfDirectory()
 
-def displayHoster(sHtmlContent = ''):
+def displayHoster(sHtmlContent = '', sMovieTitle = False):
     oGui = cGui()
 
     oInputParameterHandler = cInputParameterHandler()
     sSecurityValue = oInputParameterHandler.getValue('securityCockie')
+    if (sMovieTitle == False):
+	sMovieTitle = oInputParameterHandler.getValue('sMovieTitle')
 
     oInputParameterHandler = cInputParameterHandler()
     if (oInputParameterHandler.exist('sUrl')):
@@ -540,6 +558,7 @@ def displayHoster(sHtmlContent = ''):
             oOutputParameterHandler.addParameter('hosterParserMethode', aHoster[2])
             oOutputParameterHandler.addParameter('hosterFileName', aHoster[3])
             oOutputParameterHandler.addParameter('securityCockie', sSecurityValue)
+	    oOutputParameterHandler.addParameter('sMovieTitle', sMovieTitle)
             oGui.addFolder(oGuiElement, oOutputParameterHandler)
     oGui.setEndOfDirectory()
 
@@ -597,11 +616,12 @@ def parseHosterSnippet():
         sHosterUrlSite = oInputParameterHandler.getValue('hosterUrlSite')
         sHosterParserMethode = oInputParameterHandler.getValue('hosterParserMethode')
         sHosterFileName = oInputParameterHandler.getValue('hosterFileName')
+	sMovieTitle = oInputParameterHandler.getValue('sMovieTitle')
         if (sHosterParserMethode == 'parseHosterDefault'):
-            __parseHosterDefault(sHosterUrlSite, sHosterName, sHosterFileName, False, sSecurityValue)
+            __parseHosterDefault(sHosterUrlSite, sHosterName, sHosterFileName, False, sSecurityValue, sMovieTitle)
         if (sHosterParserMethode == 'parseMegaVideoCom'):
             sPattern = 'value=\\\\"http:\\\\/\\\\/www.megavideo.com\\\\/v\\\\/([^"]+)\\\\'
-            __parseHosterDefault(sHosterUrlSite, sHosterName, sHosterFileName, sPattern, sSecurityValue)
+            __parseHosterDefault(sHosterUrlSite, sHosterName, sHosterFileName, sPattern, sSecurityValue, sMovieTitle)
 
 def ajaxCall():
     oGui = cGui()
@@ -766,7 +786,7 @@ def __createAjaxUrl(sMediaType, iPage, iMediaTypePageId, sCharacter='A'):
     oRequestHandler.addParameters('sSortDir_0', 'asc')
     return oRequestHandler.getRequestUri()
 
-def __parseHosterDefault(sUrl, sHosterName, sHosterFileName, sPattern, sSecurityValue):
+def __parseHosterDefault(sUrl, sHosterName, sHosterFileName, sPattern, sSecurityValue, sMovieTitle):
     if (sPattern == False):
         #sPattern = 'div><a href=\\\\"([^"]+)\\\\'
         sPattern = 'href=\\\\"([^"]+)\\\\" alt=\\\\"Watch\\\\"'
@@ -791,6 +811,8 @@ def __parseHosterDefault(sUrl, sHosterName, sHosterFileName, sPattern, sSecurity
             iCounter = iCounter + 1
 
             oHoster = cHosterHandler().getHoster(sHosterFileName)
+	    if (sMovieTitle != False):
+		oHoster.setFileName(sMovieTitle)
             cHosterGui().showHoster(oGui, oHoster, sPartUrl)            
 
     oGui.setEndOfDirectory()

@@ -152,6 +152,7 @@ def __parseContent(oGui, sHtmlContent, sValue, iStartIndex):
             oHoster = cHosterHandler().getHoster('shoutcast')
             sTitle = str(aEntry[3]) + ' - ' + str(aEntry[2]) + ' - ' + str(aEntry[0])
             oHoster.setDisplayName(sTitle)
+	    oHoster.setFileName(sTitle)
             cHosterGui().showHoster(oGui, oHoster, str(aEntry[1]))
 
     if (__checkForNextPage(sHtmlContent)):
