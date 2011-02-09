@@ -29,7 +29,7 @@ class cHoster(iHoster):
         return True
 
     def getPattern(self):
-        return '<a href="([^"]+)">Download</a></b>'
+        return "so.addVariable\('file', '([^']+)'\);"
 
     def setUrl(self, sUrl):
         self.__sUrl = sUrl
@@ -44,10 +44,5 @@ class cHoster(iHoster):
         return self.__getMediaLinkForGuest()
 
     def __getMediaLinkForGuest(self):
-        oHosterHandler = cHosterHandler()
-        aUrl = oHosterHandler.getUrl(self)
-
-        if (aUrl[0] == True):
-            return True, str(aUrl[1]).replace(':80', '')
-
-        return aUrl
+	oHosterHandler = cHosterHandler()
+        return oHosterHandler.getUrl(self)

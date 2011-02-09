@@ -12,9 +12,9 @@ class cStatistic:
         oConfig = cConfig()
         bStatistic = oConfig.getSetting('statistic')
       
-        if (bStatistic == 'false'):
+        if (bStatistic == 'False'):
             return;
-
+	
         try:
             oRequestHandler = cRequestHandler(self.STATISTIC_URL)
 
