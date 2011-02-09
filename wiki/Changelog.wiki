@@ -1,5 +1,17 @@
 == CHANGELOG ==
 
+= Version 1.3.0 - 09.02.2011=
+    * add site ustream.tv
+    * add folder refresh after first site selection
+
+    * fix kino.to
+    * fix iload.to
+
+    * fix loaded.it
+    * fix archiv.to
+    * fix mystream.to (bitload.com)
+    * fix sharehoster.com
+
 = Version 1.2.0 - 23.01.2011=
     * add function "add to playlist"
     * fix iload.to token
