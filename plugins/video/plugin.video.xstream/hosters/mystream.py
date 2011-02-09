@@ -33,7 +33,7 @@ class cHoster(iHoster):
         return "var url = '([^']+)'"
 
     def setUrl(self, sUrl):
-        self.__sUrl = sUrl
+        self.__sUrl = sUrl + '?c=free'
 
     def checkUrl(self, sUrl):
         return True

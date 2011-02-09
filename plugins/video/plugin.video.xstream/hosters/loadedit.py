@@ -1,3 +1,5 @@
+from resources.lib.parser import cParser
+from resources.lib.handler.requestHandler import cRequestHandler
 from hosters.hoster import iHoster
 
 class cHoster(iHoster):
@@ -28,7 +30,7 @@ class cHoster(iHoster):
         return True
 
     def getPattern(self):
-        return ""
+        return '<input type="hidden" name="code" value="(.*?)"'
 
     def setUrl(self, sUrl):
         self.__sUrl = sUrl
@@ -43,9 +45,24 @@ class cHoster(iHoster):
         return self.__getMediaLinkForGuest()
 
     def __getMediaLinkForGuest(self):
-        sUrl = self.__sUrl.replace('/show/', '/get/')
+	oRequestHandler = cRequestHandler(self.__sUrl)
+	sHtmlContent = oRequestHandler.request();
 
-        aResult = []
-        aResult.append(True)
-        aResult.append(sUrl)
-        return aResult
+	oParser = cParser()
+        aResult = oParser.parse(sHtmlContent, self.getPattern())
+	if (aResult[0] == True):
+	    sCode = aResult[1]
+
+	    oRequestHandler = cRequestHandler(self.__sUrl)
+	    oRequestHandler.setRequestType(cRequestHandler.REQUEST_TYPE_POST)
+	    oRequestHandler.addParameters('code', sCode)
+	    sHtmlContent = oRequestHandler.request();
+
+	    sPattern = "playlist: \[.*?\,.*?},.*?url: '(.*?)'"
+	    oParser = cParser()
+	    aResult = oParser.parse(sHtmlContent, sPattern)
+	    
+	    if (aResult[0] == True):		
+		return True, aResult[1][0]
+
+	return False, ''

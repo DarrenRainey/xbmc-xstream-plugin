@@ -499,22 +499,22 @@ def showRelease():
                 oOutputParameterHandler.addParameter('movieUrl', sUrl)
                 oOutputParameterHandler.addParameter('security', sSecurity)
                 oGui.addFolder(oGuiElement, oOutputParameterHandler)
-        else:            
-            sPattern = '<div class="module-item">\r <h1>(.*?)</h1>\r <div class="module-content ddl">\r  <div id="ReleaseTabContent">'
+        else:
+	    sPattern = '<div class="module-footer"></div>\r</div>\r<div class="module-item">\r <h1>\r (.*?)</h1>\r <div class="module-content ddl">\r <div id="ReleaseTabs">'
 
             oParser = cParser()
             aResult = oParser.parse(sHtmlContent, sPattern)
-
+	    
             if (aResult[0] == True):
                 for aEntry in aResult[1]:
                     oGuiElement = cGuiElement()
                     oGuiElement.setSiteName(SITE_IDENTIFIER)
-                    oGuiElement.setFunction('showStreams')
+                    oGuiElement.setFunction('showStreams')		    
 
-                    sPattern = '<a href="/release/(.*?)">([^"]+)</a>'
+                    sPattern = '<a href="(.*?)">([^"]+)</a>'
                     oParser = cParser()
-                    aResultTitle = oParser.parse(sHtmlContent, sPattern)
-
+                    aResultTitle = oParser.parse(aEntry, sPattern)
+		    
                     if (aResultTitle[0] == True):
                         sTitle = aResultTitle[1][0][1]                    
                         oGuiElement.setTitle(sTitle)
@@ -541,14 +541,14 @@ def showStreams():
     oRequestHandler.addHeaderEntry('Cookie', sSecurity)
     sHtmlContent = oRequestHandler.request();
 
-    sPattern = '<div class="SEP"><div><div></div><h3>DivX Streams</h3><div></div></div></div>(.*?)</table>'
+    sPattern = '<div><div></div><h3>DivX Streams</h3><div></div></div></div>(.*?)</table>'
     oParser = cParser()
     aResult = oParser.parse(sHtmlContent, sPattern)
     if (aResult[0] == True):
         for aEntryHtml in aResult[1]:
             __parseHosters('Divx', oGui, aEntryHtml)
 
-    sPattern = '<div class="SEP"><div><div></div><h3>Flash Streams</h3><div></div></div></div>(.*?)</table>'
+    sPattern = '<div><div></div><h3>Flash Streams</h3><div></div></div></div>(.*?)</table>'
     oParser = cParser()
     aResult = oParser.parse(sHtmlContent, sPattern)
     if (aResult[0] == True):

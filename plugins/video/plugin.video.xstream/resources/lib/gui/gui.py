@@ -63,6 +63,9 @@ class cGui:
         xbmcplugin.addSortMethod(iHandler, xbmcplugin.SORT_METHOD_NONE)
         xbmcplugin.endOfDirectory(iHandler, True)
 
+    def updateDirectory(self):
+	xbmc.executebuiltin("Container.Refresh")
+
     def __createItemUrl(self, oGuiElement, oOutputParameterHandler=''):
         if (oOutputParameterHandler == ''):
             oOutputParameterHandler = cOutputParameterHandler()

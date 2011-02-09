@@ -43,6 +43,7 @@ def parseUrl():
         aPlugins = oPluginHandler.getAvailablePlugins()
         if (len(aPlugins) == 0):
             oGui.openSettings()
+	    oGui.updateDirectory()
         else:
             for aPlugin in aPlugins:
                 oGuiElement = cGuiElement()
